@@ -53,6 +53,33 @@ lightDir.setLocalEulerAngles(45, 90, 0);
 
 // All Assets Reqs
 var requests = [{
+    url: "EventInput.js",//————————————————————————————————Game
+    type: "script"
+},{
+    url: "hammer.min.js",
+    type: "script"
+},{
+    url: "Physics.js",
+    type: "script"
+},{
+    url: "ribbon.js",//————————————————————————————————Player
+    type: "script"
+},{
+    url: "physicalbody.js",
+    type: "script"
+},{
+    url: "physicalDroneDrive.js",
+    type: "script"
+},{
+    url: "DroneController.js",
+    type: "script"
+},{
+    url: "Cruise.js",
+    type: "script"
+},{
+    url: "res/drone/drone.json",
+    type: "model"
+},{
     url: "follow.js",
     type: "script"
 },{
@@ -76,6 +103,15 @@ for (var i = 0; i < requests.length; i++) {
     app.assets.loadFromUrl(requests[i].url, requests[i].type, function (err, asset) {
         count--;
         if (count === 0) {
+            //set up game body
+            var game = app.root;
+            game.addComponent('script');
+            game.script.create('physics',{
+                attributes:{
+                    fixedStep: 0.01
+                }
+            });
+            game.script.create('eventInput');
 
             // Set up camera behavior
             camera.addComponent('script');
@@ -107,16 +143,56 @@ for (var i = 0; i < requests.length; i++) {
             groundMat.update();
 
             // Set up entity behavior
+             entity.name = "Player";
+            //add ribbon to entity
+            entity.addComponent('script');
+            entity.script.create('ribbon',{
+                attributes:{
+                    lifetime: 5,
+                    xoffset: - 0.5,
+                    yoffset: 0.5,
+                    height: 0.4
+                }
+            });
+            entity.script.create('physicalbody',{
+                attributes:{
+                    mass: 1,
+                    drag: 0.001
+                }
+            });
+            
+            entity.script.create('physicalDroneDrive',{
+                attributes:{
+                    Thrust: 50,
+                    thrustDelta: 50,
+                    hoverHeight: 50,
+                    horizontalVel: pc.Vec2.ZERO,
+                    heading: pc.Vec2.ZERO,
+                    headingVel: true
+                }
+            });
+            entity.script.create('droneController',{
+                attributes:{
+                    speed: 25
+                }
+            });
+            var planemodel = app.assets.find("drone.json");
+            entity.addComponent("model");
+            entity.model.model = planemodel.resource;
+
+
             var angle = 135;
             var radius = 3;
             var height = 0;//1.1;
             app.on("update", function (dt) {
+                /*
                 angle += 30*dt;
                 if (angle > 360) {
                     angle -= 360;
                 }
                 entity.setLocalPosition(radius * Math.sin(angle*pc.math.DEG_TO_RAD), height, radius * Math.cos(angle*pc.math.DEG_TO_RAD));
                 entity.setLocalEulerAngles(0, angle+90, 0);
+                */
             });
         }
     });
