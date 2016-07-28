@@ -1,5 +1,4 @@
 var EventInput = pc.createScript('eventInput');
-pc.events.attach(EventInput); // add events to o
 
 EventInput.prototype.initialize = function() {
     // Touch events

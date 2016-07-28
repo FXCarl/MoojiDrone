@@ -41,7 +41,7 @@ PhysicalDroneDrive.attributes.add('headingVel',{
 
 // initialize code called once per entity
 PhysicalDroneDrive.prototype.initialize = function() {
-    this.app.on('fixedupdate', this.fixedupdate,this);
+    this.app.on('fixedupdate', this.fixedupdate, this);
     // local var
     this.gravity = new pc.Vec3(0, -3.71, 0); // we are on Mars !
     this.currentThrust = 0;
@@ -76,7 +76,7 @@ PhysicalDroneDrive.prototype.fixedupdate = function(dt) {
     // a = (tgtv - v) / t [t = 1]
     var expectHAcc = this.horizontalVel.clone().sub(currentHVel);
     var expectHThrust = expectHAcc.scale(pbody.mass);
-    var hThrust = pc.Vec2.ZERO;
+    var hThrust = new pc.Vec2();
     if(expectHThrust.lengthSq() > 0)
         hThrust.copy(expectHThrust).normalize();
     hThrust.scale(pc.math.clamp(expectHThrust.length(), 0, useableHThrust));

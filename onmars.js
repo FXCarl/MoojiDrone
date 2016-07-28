@@ -24,7 +24,8 @@ app.setCanvasResolution(pc.RESOLUTION_AUTO);
 // No Scene Load
 // So Direct Start
 app.start();
-app.scene.gammaCorrection = pc.GAMMA_SRGBFAST;
+app.scene.gammaCorrection = pc.GAMMA_SRGB;
+app.scene.ambientLight = new pc.Color(0.85, 0.73, 0.6);
 
 // Create an Entity with a camera component
 var camera = new pc.Entity();
@@ -118,7 +119,7 @@ for (var i = 0; i < requests.length; i++) {
             camera.script.create('follow',{
                 attributes:{
                     target: entity,
-                    distance: 50
+                    distance: 15
                 }
             });
             
@@ -156,7 +157,7 @@ for (var i = 0; i < requests.length; i++) {
             });
             entity.script.create('physicalbody',{
                 attributes:{
-                    mass: 1,
+                    mass: 5,
                     drag: 0.001
                 }
             });
@@ -164,8 +165,8 @@ for (var i = 0; i < requests.length; i++) {
             entity.script.create('physicalDroneDrive',{
                 attributes:{
                     Thrust: 50,
-                    thrustDelta: 50,
-                    hoverHeight: 50,
+                    thrustDelta: 25,
+                    hoverHeight: 15,
                     horizontalVel: pc.Vec2.ZERO,
                     heading: pc.Vec2.ZERO,
                     headingVel: true
@@ -180,20 +181,17 @@ for (var i = 0; i < requests.length; i++) {
             entity.addComponent("model");
             entity.model.model = planemodel.resource;
 
-
-            var angle = 135;
+            /*var angle = 135;
             var radius = 3;
             var height = 0;//1.1;
             app.on("update", function (dt) {
-                /*
                 angle += 30*dt;
                 if (angle > 360) {
                     angle -= 360;
                 }
                 entity.setLocalPosition(radius * Math.sin(angle*pc.math.DEG_TO_RAD), height, radius * Math.cos(angle*pc.math.DEG_TO_RAD));
                 entity.setLocalEulerAngles(0, angle+90, 0);
-                */
-            });
+            });*/
         }
     });
 };
