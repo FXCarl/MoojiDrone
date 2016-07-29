@@ -1,4 +1,5 @@
 var canvas = document.getElementById("application-canvas");
+
 // Disable I-bar cursor on click+drag
 canvas.onselectstart = function () { return false; };
 
@@ -42,6 +43,11 @@ var ground = new pc.Entity();
 // Create walking dude
 var entity = new pc.Entity();
 
+//create UI bodies
+var ui = new pc.Entity();
+var mainMenu = new pc.Entity();
+var game = new pc.Entity();
+
 // Create an Entity with a light component
 var lightDir = new pc.Entity();
 lightDir.addComponent("light", {
@@ -55,9 +61,6 @@ lightDir.setLocalEulerAngles(45, 90, 0);
 // All Assets Reqs
 var requests = [{
     url: "EventInput.js",//————————————————————————————————Game
-    type: "script"
-},{
-    url: "hammer.min.js",
     type: "script"
 },{
     url: "Physics.js",
@@ -95,6 +98,18 @@ var requests = [{
 },{
     url: "res/Mars/4657643/diffuse.jpg",
     type: "texture"
+},{
+    url: "UI/game.js",//————————————————————————————————————UI
+    type: "script"
+},{
+    url: "UI/gameUi.js",
+    type: "script"
+},{
+    url: "UI/mainMenu.js",
+    type: "script"
+},{
+    url: "UI/main.js",
+    type: "script"
 }];
 
 // Handle initialize
@@ -105,21 +120,40 @@ for (var i = 0; i < requests.length; i++) {
         count--;
         if (count === 0) {
             //set up game body
-            var game = app.root;
-            game.addComponent('script');
-            game.script.create('physics',{
+            var root = app.root;
+            root.addComponent('script');
+            root.script.create('physics',{
                 attributes:{
                     fixedStep: 0.01
                 }
             });
-            game.script.create('eventInput');
+            root.script.create('eventInput');
+
+            //set up ui
+            ui.name = 'UI';
+            game.name = 'Game';
+            mainMenu.name = 'MainMenu';
+
+            ui.addComponent('script');
+            mainMenu.addComponent('script');
+            game.addComponent('script');
+
+            ui.script.create('main',{
+                attributes:{
+                    minHeight: 570,
+                    minWidth: 1070
+                }
+            });
+            mainMenu.script.create('mainMenu');
+            game.script.create('game');
+            game.script.create('gameUi');
 
             // Set up camera behavior
             camera.addComponent('script');
             camera.script.create('follow',{
                 attributes:{
                     target: entity,
-                    distance: 15
+                    distance: 45
                 }
             });
             
@@ -139,12 +173,14 @@ for (var i = 0; i < requests.length; i++) {
                 }
             });
             var groundTex = app.assets.find("diffuse.jpg");
-            groundMat = ground.model.model.getMaterials()[0];
-            groundMat.diffuseMap = groundTex.resource;
-            groundMat.update();
+            if(ground.model){
+                groundMat = ground.model.model.getMaterials()[0];
+                groundMat.diffuseMap = groundTex.resource;
+                groundMat.update();
+            }
 
             // Set up entity behavior
-             entity.name = "Player";
+            entity.name = "Player";
             //add ribbon to entity
             entity.addComponent('script');
             entity.script.create('ribbon',{
@@ -180,18 +216,6 @@ for (var i = 0; i < requests.length; i++) {
             var planemodel = app.assets.find("drone.json");
             entity.addComponent("model");
             entity.model.model = planemodel.resource;
-
-            /*var angle = 135;
-            var radius = 3;
-            var height = 0;//1.1;
-            app.on("update", function (dt) {
-                angle += 30*dt;
-                if (angle > 360) {
-                    angle -= 360;
-                }
-                entity.setLocalPosition(radius * Math.sin(angle*pc.math.DEG_TO_RAD), height, radius * Math.cos(angle*pc.math.DEG_TO_RAD));
-                entity.setLocalEulerAngles(0, angle+90, 0);
-            });*/
         }
     });
 };
@@ -199,5 +223,8 @@ for (var i = 0; i < requests.length; i++) {
 // Add Entities into the scene hierarchy
 app.root.addChild(camera);
 app.root.addChild(lightDir);
-app.root.addChild(ground);
-app.root.addChild(entity);
+app.root.addChild(ui);
+ui.addChild(mainMenu);
+ui.addChild(game);
+ui.addChild(ground);
+ui.addChild(entity);

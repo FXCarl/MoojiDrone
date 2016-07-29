@@ -4,13 +4,11 @@ EventInput.prototype.initialize = function() {
     // Touch events
     var touchOptions ={
 				recognizers:[
-					[Hammer.Pan,	{direction: Hammer.DIRECTION_ALL}],
-					[Hammer.Pinch, 	{enable: true}],
-					[Hammer.Press, 	{enable: true, time: 5}]
+					[Hammer.Pan,	{direction: Hammer.DIRECTION_VERTICAL}],
 				]
 			};
-    this.hammer = new Hammer(this.app.graphicsDevice.canvas, touchOptions);
-    this.hammer.on('pan',this.touchMove.bind(this));
+    var hammer = new Hammer(this.app.graphicsDevice.canvas, touchOptions);
+    hammer.on('pan',this.touchMove.bind(this));
 };
 
 EventInput.prototype.update = function(dt){
