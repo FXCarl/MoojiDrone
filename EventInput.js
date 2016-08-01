@@ -2,13 +2,15 @@ var EventInput = pc.createScript('eventInput');
 
 EventInput.prototype.initialize = function() {
     // Touch events
+    
     var touchOptions ={
 				recognizers:[
 					[Hammer.Pan,	{direction: Hammer.DIRECTION_VERTICAL}],
 				]
 			};
-    var hammer = new Hammer(this.app.graphicsDevice.canvas, touchOptions);
+    var hammer = new Hammer(window.top, touchOptions);
     hammer.on('pan',this.touchMove.bind(this));
+    
 };
 
 EventInput.prototype.update = function(dt){
