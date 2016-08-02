@@ -2,19 +2,10 @@ var EventInput = pc.createScript('eventInput');
 
 EventInput.prototype.initialize = function() {
     // Touch events
-    
-    var touchOptions ={
-				recognizers:[
-					[Hammer.Pan,	{direction: Hammer.DIRECTION_VERTICAL}],
-				]
-			};
-    var hammer = new Hammer(window.top, touchOptions);
-    hammer.on('pan',this.touchMove.bind(this));
-    
 };
 
 EventInput.prototype.update = function(dt){
-     this.InputkeyDown();
+    this.InputkeyDown();
 };
 
 EventInput.prototype.InputkeyDown = function(){
@@ -33,10 +24,15 @@ EventInput.prototype.InputkeyDown = function(){
     }
     this.app.fire('playerMoveToward', keyV.x, keyV.y);
 };
-
-EventInput.prototype.touchMove = function(ev){
+var touchOptions ={
+        recognizers:[
+            [Hammer.Pan,	{direction: Hammer.DIRECTION_VERTICAL}],
+        ]
+    };
+var hammer = new Hammer(document.getElementById("touchPanel"), touchOptions);//window.top
+hammer.on('pan',function(ev){
     if(this.activeTouch === false){return false;}
     if( Math.abs(ev.deltaX) > 10 || Math.abs(ev.deltaY) > 10){
-        this.app.fire('playerMoveToward',ev.deltaX,ev.deltaY);
+        pc.app.fire('playerMoveToward',ev.deltaX,ev.deltaY);
     }
-};
+});

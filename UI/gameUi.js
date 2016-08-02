@@ -10,6 +10,7 @@ GameUi.prototype.initialize = function() {
                     width:100%;
                     height:100%;
                     display: block;
+                    pointer-events : none;
                   }
                   #game .score-hud {
                     position: fixed;
@@ -32,33 +33,40 @@ GameUi.prototype.initialize = function() {
                   }
                   #game .btn-pause {
                     width: 50px;
+                    pointer-events : auto;
                   }
                   #game .btn-pause img {
                     width: 32px;
                     margin-top: 7px;
+                    pointer-events : auto;
                   }
                   #game .panel.pause,
                   #game .panel.tutorial {
                     top: 50%;
                     margin-top: -195px;
+                    pointer-events : auto;
                   }
                   #game .panel .panel-body {
                       padding: 70px 0 90px 0;
                       min-height: 115px;
+                      pointer-events : auto;
                   }
                   #game .panel.level-complete .panel-body {
                       padding: 0 0 140px 0;
                       min-height: 115px;
+                      pointer-events : auto;
                   }
                   #game .panel.pause .panel-body .btn,
                   #game .panel.level-complete .panel-body .btn {
                     position: static;
                     margin: 0 auto;
                     margin-bottom: 0;
+                    pointer-events : auto;
                   }
                   #game .panel.level-complete {
                     top: 50%;
                     margin-top: -150px;
+                    pointer-events : auto;
                   }
                   #game .panel.level-complete .panel-body .score-label,
                   #game .panel.level-complete .panel-body .score-value {
@@ -67,10 +75,12 @@ GameUi.prototype.initialize = function() {
                     color: #EA0;
                     text-shadow: 0px 0px 3px #EA0;
                     text-align: center;
+                    pointer-events : auto;
                   }
                   #game .panel.level-complete .panel-body .score-label {
                     font-size: 30px;
                     padding-bottom: 5px;
+                    pointer-events : auto;
                   }
                   #game .panel.level-complete .panel-body .message {
                     clear: both;
@@ -79,11 +89,13 @@ GameUi.prototype.initialize = function() {
                     padding: 20px 30px 10px 30px;
                     display: none;
                     line-height: 1.2em;
+                    pointer-events : auto;
                   }
                   #game .panel.level-complete .panel-body .message a {
                       color: #EA0;
                       text-decoration: underline;
                       cursor: pointer;
+                      pointer-events : auto;
                   }
                   #game .panel.level-complete .result,
                   #game .panel.level-complete .leaderboard {
@@ -91,39 +103,49 @@ GameUi.prototype.initialize = function() {
                     border-radius: 10px;
                     border: 1px solid #444;
                     background: rgba(0,0,0,0.2);
+                    pointer-events : auto;
                   }
                   #game .panel.level-complete .result {
                     float: left;
                     margin-left: 22px;
                     height: 115px;
                     padding-top: 55px;
+                    pointer-events : auto;
                   }
                   #game .panel.level-complete.final {
                       margin-top: -185px;
+                      pointer-events : auto;
                   }
                   #game .panel.level-complete.final .panel-body {
                       padding-bottom: 60px;
+                      pointer-events : auto;
                   }
                   #game .panel.level-complete.final .panel-body .message {
                     display: block;
+                    pointer-events : auto;
                   }
                   #game .panel.level-complete.final .next-level {
                     display: none;
+                    pointer-events : auto;
                   }
                   #game .btn-secondary {
                     width: 175px;
+                    pointer-events : auto;
                   }
                   #game .panel.tutorial {
                       display: none;
+                      pointer-events : auto;
                   }
                   #game .panel.tutorial .panel-body {
                     text-align: center;
                     padding: 20px 0 90px 0;
+                    pointer-events : auto;
                   }
                   #game .panel.tutorial .panel-body .message {
                     color: #FFF;
                     padding: 10px;
                     line-height: 22px;
+                    pointer-events : auto;
                   }
                   #game .fuel-container {
                     position: absolute;
@@ -133,6 +155,7 @@ GameUi.prototype.initialize = function() {
                     height: 46px;
                     margin-left: -150px;
                     opacity: 0.75;
+                    pointer-events : auto;
                   }
                   #game .fuel-container .bar {
                     position: absolute;
@@ -144,6 +167,7 @@ GameUi.prototype.initialize = function() {
                     -webkit-border-radius: 7px;
                     -moz-border-radius: 7px;
                     border-radius: 7px;
+                    pointer-events : auto;
                   }
                   #game .fuel-container .label {
                     position: absolute;
@@ -183,12 +207,15 @@ GameUi.prototype.initialize = function() {
                     width: 40%;
                     height: 80%;
                     bottom: 5%;
+                    pointer-events : auto;
                   }
                   #game .control-panel.left {
                       left: 0;
+                      pointer-events : auto;
                   }
                   #game .control-panel.right {
                       right: 0;
+                      pointer-events : auto;
                   }
             */}.toString().trim();
     css = css.slice(css.indexOf('/*') + 2).slice(0, -3);
@@ -196,13 +223,10 @@ GameUi.prototype.initialize = function() {
     
     this.game = this.entity.script.game;
     this.main = this.app.root.findByName('UI').script.main;
-    
-    //这个层会遮挡Canvas！！如何解决!
+
+    //this.overlay = document.getElementById("touchPanel");
     this.overlay = $('<div/>').attr('id', 'game').addClass('overlay').appendTo($('body'));
-
-
-    document.getElementById('game').style.display='block';
-
+   //var touchPanel = $('<div>/').attr('id','touchPanel').attr('style','position:fixed;z-index:0;top:0;left:0;width:100%; height:100%;display:block;').appendTo(this.overlay);
 
     this.btnPause = $('<a/>').addClass('btn btn-pause').css({top: 10, right: 10}).appendTo(this.overlay);
     $('<img/>').attr('src', 'https://playcanvas.com/api/files/assets/1584528/1/pause.png').appendTo(this.btnPause);
@@ -217,8 +241,8 @@ GameUi.prototype.initialize = function() {
         }
     }.bind(this);
     
-    this.btnEnd = $('<a/>').addClass('btn btn-end').css({top: 10, left: 10}).appendTo(this.overlay);
-    $('<img/>').attr('src', 'http://img1.imgtn.bdimg.com/it/u=3184085881,3524166880&fm=21&gp=0.jpg').appendTo(this.btnEnd);
+    this.btnEnd = $('<a/>').addClass('btn btn-pause').css({top: 10, left: 10}).appendTo(this.overlay);
+    $('<img/>').attr('src', 'https://playcanvas.com/api/files/assets/1584528/1/stop.png').appendTo(this.btnEnd);
     this.btnEnd.on('click', function () {
         this.game.end();
     }.bind(this));
@@ -263,8 +287,10 @@ GameUi.prototype.initialize = function() {
     var endBody = $('<div/>').addClass('panel-body').appendTo(this.endPanel);
     this.endRestart = $('<a/>').addClass('btn').css({bottom: 10, left: 20}).text('游戏结束').appendTo(endBody);
     this.endRestart.on('click', function () {
-        this.game.switchState("MAIN_MENU");
         this.game.reset();
+        document.getElementById('game').style.display='none';
+        document.getElementById('main-menu').style.display='block';
+        this.game.switchState("MAIN_MENU");
     }.bind(this));
     this.endPanel.display = function (show) {
         if (show) {
@@ -274,7 +300,6 @@ GameUi.prototype.initialize = function() {
         }
     }.bind(this);
     this.endPanel.display(false); 
-    
     this.app.on('GameReset',this.reset,this);
 };
 

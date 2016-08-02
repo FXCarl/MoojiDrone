@@ -78,7 +78,7 @@ var requests = [{
     url: "DroneController.js",
     type: "script"
 },{
-    url: "Cruise.js",
+    url: "targetCruise.js",
     type: "script"
 },{
     url: "res/drone/drone.json",
@@ -127,8 +127,6 @@ for (var i = 0; i < requests.length; i++) {
                     fixedStep: 0.01
                 }
             });
-            root.script.create('eventInput');
-
             //set up ui
             ui.name = 'UI';
             game.name = 'Game';
@@ -145,8 +143,10 @@ for (var i = 0; i < requests.length; i++) {
                 }
             });
             mainMenu.script.create('mainMenu');
-            game.script.create('game');
             game.script.create('gameUi');
+            game.script.create('game');
+            
+            root.script.create('eventInput');
 
             // Set up camera behavior
             camera.addComponent('script');

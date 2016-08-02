@@ -219,13 +219,11 @@ Main.prototype.initialize = function() {
                 "MAIN_MENU": this.app.root.findByName('MainMenu'),
                 "GAME": this.app.root.findByName('Game')
             };
-   
             this.level = 0;
             this.setState("MAIN_MENU");
             this.app.mouse.disableContextMenu();  
             
             $(window).resize(this.onResize.bind(this));
-    
 };
 
 Main.prototype.onResize = function() {
@@ -249,7 +247,6 @@ Main.prototype.setState = function(name) {
                         if (this.scenes[key].initialized) {
                             if (key === name) {
                                 if (this.scenes[key].hasOwnProperty('onActivate')) {
-                                    
                                     this.scenes[key].onActivate();
                                 }
                             } else {

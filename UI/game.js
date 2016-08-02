@@ -6,29 +6,21 @@ Game.prototype.initialize = function() {
      this.main = this.app.root.findByName('UI').script.main;
     
      this.entity.onActivate = function () {
-         
          this.start();
             }.bind(this);
-    
+
      this.entity.initialized = true;
-    
 };
 
 Game.prototype.switchState = function(state) {              //切换状态
     this.main.setState(state);
 };
 
-
-Game.prototype.start = function(paused) {                  //游戏开始                           
-     
+Game.prototype.start = function(paused) {                  //游戏开始     
     setTimeout(function () {  //控制pausePanel
          this.gameui.reset();  
             }.bind(this), 100); 
-    
 };
-
-
-
 
 Game.prototype.pause = function(paused) {                   //游戏暂停
     this.paused = paused;

@@ -11,6 +11,7 @@ MainMenu.prototype.initialize = function() {
                     width:100%;
                     height:100%;
                     display:block;
+                    pointer-events : none;
                   }
                   #main-menu h1 {
                     position: fixed;
@@ -23,40 +24,50 @@ MainMenu.prototype.initialize = function() {
                   }
                   #main-menu .btn-primary {
                     width: 250px;
+                    pointer-events : auto;
                   }
                   #main-menu .btn-secondary {
                     width: 175px;
+                    pointer-events : auto;
                   }
                   #main-menu .btn-play {
                     letter-spacing: 3px;
+                    pointer-events : auto;
                   }
                   #main-menu .btn-play img {
                     position: fixed;
                     width: 48px;
                     top: 11px;
+                    pointer-events : auto;
                   }
                   #main-menu .btn-play img.left {
                     left: 22px;
+                    pointer-events : auto;
                   }
                   #main-menu .btn-play img.right {
                     right: 22px;
+                    pointer-events : auto;
                   }
                   #main-menu .panel-wrapper {
                     padding: 105px 0 20px 0;
+                    pointer-events : auto;
                   }
-                  #main-menu .panel.main-menu, 
+                  #main-menu .panel.main-menu,
                   #main-menu .panel.settings,
                   #main-menu .panel.level-select {
                     height: 70px;
                     bottom: 0;
+                    pointer-events : auto;
                   }
                   #main-menu .panel.level-select-details,
                   #main-menu .panel.more-stuff {
                     top: 50%;
                     margin-top: -170px;
+                    pointer-events : auto;
                   }
                   #main-menu .panel.level-select-details .panel-body {
                     padding-bottom: 20px;
+                    pointer-events : auto;
                   }
                   #main-menu .panel.level-select-details .description {
                     border: 1px solid #444;
@@ -69,61 +80,76 @@ MainMenu.prototype.initialize = function() {
                     color: #DDD;
                     padding: 10px;
                     font-size: 0.8em;
+                    pointer-events : auto;
                   }
                   #main-menu .btn-arrow {
                     width: 83px;
+                    pointer-events : auto;
                   }
                   #main-menu .btn-arrow img {
                     width: 32px;
                     margin-top: 7px;
+                    pointer-events : auto;
                   }
                   #main-menu .panel.more-stuff {
                       display: block;
+                      pointer-events : auto;
                   }
                   #main-menu .panel.more-stuff h2 {
                       margin-bottom: 0;
+                      pointer-events : auto;
                   }
                   #main-menu .panel.more-stuff .panel-body {
                     height: 275px;
                     margin: 0 20px 20px 20px;
                     overflow: scroll;
+                    pointer-events : auto;
                   }
                   #main-menu .panel.more-stuff .panel-body ul {
                     list-style: none;
+                    pointer-events : auto;
                   }
                   #main-menu .panel.more-stuff .panel-body li {
                     clear: both;
                     border-bottom: 2px dotted #AAA;
                     display: block;
                     margin: 10px 0;
+                    pointer-events : auto;
                   }
                   #main-menu .panel.more-stuff .panel-body div.thumb {
                     float: left;
+                    pointer-events : auto;
                   }
                   #main-menu .panel.more-stuff .panel-body img {
                     width: 100px;
                     -webkit-border-radius: 10px;
                     -moz-border-radius: 10px;
                     border-radius: 10px;
+                    pointer-events : auto;
                   }
                   #main-menu .panel.more-stuff .panel-body div.thumb a.goto {
                     display: block;
                     text-align: center;
                     padding: 5px;
+                    pointer-events : auto;
                   }
                   #main-menu .panel.more-stuff .panel-body div.body {
                     margin-left: 110px;
                     min-height: 130px;
+                    pointer-events : auto;
                   }
                   #main-menu .panel.more-stuff .panel-body a.title {
                     font-size: 1.1em;
+                    pointer-events : auto;
                   }
                   #main-menu .panel.more-stuff .panel-body p {
                     color: #EEE;
                     padding-top: 5px;
+                    pointer-events : auto;
                   }
                   #main-menu .panel.more-stuff ul li:last-child {
                       border: none;
+                      pointer-events : auto;
                   }
             */}.toString().trim();
     css = css.slice(css.indexOf('/*') + 2).slice(0, -3);
@@ -131,7 +157,8 @@ MainMenu.prototype.initialize = function() {
 
     this.main = this.app.root.findByName('UI').script.main;
     this.gameui=this.app.root.findByName('Game').script.gameUi;
-
+ 
+    //this.overlay = document.getElementById("touchPanel");
     this.overlay = $('<div/>').attr('id', 'main-menu').addClass('overlay').appendTo($('body'));
     //this.overlay = this.app.graphicsDevice.canvas;
     var title = $('<h1/>').text('测试').appendTo(this.overlay);
@@ -140,7 +167,6 @@ MainMenu.prototype.initialize = function() {
     this.initSettingsPanel();
     this.initStartPanel();
     this.initPlaycanvasPanel();
-
 
 
     this.entity.onActivate = function () {
@@ -152,13 +178,10 @@ MainMenu.prototype.initialize = function() {
 
 
 MainMenu.prototype.reset = function() {
-       
-         this.mainMenuPanel.css({bottom: 20});
-         this.settingsPanel.css({bottom: -100});
-             this.startPanel.css({bottom: -100}); 
-             this.playcanvasPanel.css({bottom: -100});
-   
-    
+      this.mainMenuPanel.css({bottom: 20});
+      this.settingsPanel.css({bottom: -100});
+      this.startPanel.css({bottom: -100}); 
+      this.playcanvasPanel.css({bottom: -100});
 };
 
 MainMenu.prototype.initMainMenuPanel = function() {
@@ -177,7 +200,6 @@ MainMenu.prototype.initMainMenuPanel = function() {
     this.btnPlay.on('click', function () {
        // this.sound.script.sound.btnClick();
         this.mainMenuPanel.display(false);
-
         this.startPanel.display(true);
     }.bind(this));
 
