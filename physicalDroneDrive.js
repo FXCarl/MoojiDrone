@@ -21,18 +21,6 @@ PhysicalDroneDrive.attributes.add('hoverHeight',{
     defualt: 50
 });
 
-PhysicalDroneDrive.attributes.add('horizontalVel',{
-    type: 'vec2',
-    title: 'Horizontal Velocity',
-    defualt : pc.Vec2.ZERO
-});
-
-PhysicalDroneDrive.attributes.add('heading',{
-    type: 'vec2',
-    title: 'Heading',
-    defualt : pc.Vec2.ZERO
-});
-
 PhysicalDroneDrive.attributes.add('headingVel',{
     type: 'boolean',
     title: 'Heading Velocity',
@@ -45,37 +33,40 @@ PhysicalDroneDrive.prototype.initialize = function() {
     // local var
     this.gravity = new pc.Vec3(0, -3.71, 0); // we are on Mars !
     this.currentThrust = 0;
-    this.currentHThrust = pc.Vec2.ZERO;
-    this.currentThrustVector = pc.Vec3.UP;
-    this.currentHeading = pc.Vec3.FORWARD;
-    this.currentQuat = pc.Quat.IDENTITY;
+    this.currentHThrust = new pc.Vec2();
+    this.currentThrustVector = pc.Vec3.UP.clone();
+    this.currentHeading = pc.Vec3.FORWARD.clone();
+    this.currentQuat = pc.Quat.IDENTITY.clone();
+
+    this.horizontalVel = new pc.Vec2();
+    this.heading = new pc.Vec2();
+    this.pbody = this.entity.script.physicalbody;
 };
 
 PhysicalDroneDrive.prototype.fixedupdate = function(dt) {
     // find body
-    var pbody = this.entity.script.physicalbody;
     // Add Gravity
-    var gravity = this.gravity.clone().scale(pbody.mass);
-    pbody.addforce(gravity);
+    var gravity = this.gravity.clone().scale(this.pbody.mass);
+    this.pbody.addforce(gravity);
     
     // Thrust
     var maxThrust = pc.math.clamp(this.currentThrust + this.thrustDelta * dt, 0, this.maxThrust);
-    var currentPos = pbody.pos;
+    var currentPos = this.pbody.pos;
     // Compute expect vertical thrust
-    var currentVVel = pbody.currentVel.y;
+    var currentVVel = this.pbody.currentVel.y;
     var vDist = this.hoverHeight - currentPos.y;
     // a = 2 * (d/t - v) / t
     var expectT = Math.max(1, Math.abs(currentVVel / this.gravity.length()));
     var expectVAcc = 2 * (vDist / expectT - currentVVel) / expectT;
-    var expectVThrust = (expectVAcc - this.gravity.y) * pbody.mass;
+    var expectVThrust = (expectVAcc - this.gravity.y) * this.pbody.mass;
     var vThrust = pc.math.clamp(expectVThrust, 0, maxThrust) || 0;
     // Available Horizontal Thrust
     var useableHThrust = maxThrust - vThrust;
     // Compute expectr Horizontal thrust
-    var currentHVel = new pc.Vec2(pbody.currentVel.x, pbody.currentVel.z);
+    var currentHVel = new pc.Vec2(this.pbody.currentVel.x, this.pbody.currentVel.z);
     // a = (tgtv - v) / t [t = 1]
     var expectHAcc = this.horizontalVel.clone().sub(currentHVel);
-    var expectHThrust = expectHAcc.scale(pbody.mass);
+    var expectHThrust = expectHAcc.scale(this.pbody.mass);
     var hThrust = new pc.Vec2();
     if(expectHThrust.lengthSq() > 0)
         hThrust.copy(expectHThrust).normalize();
@@ -90,19 +81,18 @@ PhysicalDroneDrive.prototype.fixedupdate = function(dt) {
         this.currentQuat = new pc.Quat(this.currentThrustVector.z, 0, -this.currentThrustVector.x, 1 + this.currentThrustVector.y).normalize();
     }
     else{
-        this.currentThrustVector = pc.Vec3.UP;
+        this.currentThrustVector = pc.Vec3.UP.clone();
         this.currentQuat = pc.Quat.IDENTITY;
     }
     // Apply Thrust
-    pbody.addforce(thrust);
+    this.pbody.addforce(thrust);
 };
 
 PhysicalDroneDrive.prototype.update = function(dt){
     // find body
-    var pbody = this.entity.script.physicalbody;
     // heading
     if(this.headingVel){
-        this.heading.lerp(this.heading, new pc.Vec2(pbody.currentVel.x, pbody.currentVel.z), dt);
+        this.heading.lerp(this.heading, new pc.Vec2(this.pbody.currentVel.x, this.pbody.currentVel.z), dt);
     }
     if(this.heading.lengthSq() > 0){
         this.currentHeading.lerp(this.currentHeading, new pc.Vec3(this.heading.x, 0, this.heading.y), 0.5);

@@ -5,11 +5,6 @@ TargetCruise.attributes.add('target',{
     default: null
 });
 
-TargetCruise.attributes.add('FriendList',{
-    type: 'entity',
-    default: null
-});
-
 TargetCruise.attributes.add('range',{
     type: 'number',
     default: 50
@@ -34,7 +29,7 @@ TargetCruise.attributes.add('friendSpace',{
 TargetCruise.prototype.initialize = function() {
     this.drone = this.entity.script.physicalDroneDrive;
     //获取队伍信息
-    this.friends = this.FriendList.children;
+    this.friends = this.entity.parent.children;
     this.timer = 0;
     this.app.on('GameReset',this.reset,this);
 };

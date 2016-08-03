@@ -7,7 +7,7 @@ DroneController.attributes.add('speed',{
 
 // initialize code called once per entity
 DroneController.prototype.initialize = function() {
-    this.app.on('playerMoveToward', this.playerMoveToward, this);
+    this.app.on(this.entity.name + ':MoveToward', this.playerMoveToward, this);
 };
 
 // update code called every frame
@@ -24,7 +24,7 @@ DroneController.prototype.playerMoveToward = function(x,z){
 // swap method called for script hot-reloading
 // inherit your script state here
 DroneController.prototype.swap = function(old) {
-    old.app.off('playerMoveToward', this.playerMoveToward, this);
+    old.app.off(this.entity.name + ':MoveToward', this.playerMoveToward, this);
     this.initialize();
 };
 

@@ -43,6 +43,8 @@ var ground = new pc.Entity();
 // Create walking dude
 var entity = new pc.Entity();
 
+var friendList = new pc.Entity();
+
 //create UI bodies
 var ui = new pc.Entity();
 var mainMenu = new pc.Entity();
@@ -64,6 +66,9 @@ var requests = [{
     type: "script"
 },{
     url: "Physics.js",
+    type: "script"
+},{
+    url: "PeilinNoise.js",
     type: "script"
 },{
     url: "ribbon.js",//————————————————————————————————Player
@@ -127,6 +132,8 @@ for (var i = 0; i < requests.length; i++) {
                     fixedStep: 0.01
                 }
             });
+            root.script.create('eventInput');
+            
             //set up ui
             ui.name = 'UI';
             game.name = 'Game';
@@ -146,7 +153,6 @@ for (var i = 0; i < requests.length; i++) {
             game.script.create('gameUi');
             game.script.create('game');
             
-            root.script.create('eventInput');
 
             // Set up camera behavior
             camera.addComponent('script');
@@ -180,7 +186,7 @@ for (var i = 0; i < requests.length; i++) {
             }
 
             // Set up entity behavior
-            entity.name = "Player";
+            entity.name = "player";
             //add ribbon to entity
             entity.addComponent('script');
             entity.script.create('ribbon',{
@@ -193,29 +199,69 @@ for (var i = 0; i < requests.length; i++) {
             });
             entity.script.create('physicalbody',{
                 attributes:{
-                    mass: 5,
-                    drag: 0.001
+                    mass: 1,
+                    drag: 0
                 }
             });
             
             entity.script.create('physicalDroneDrive',{
                 attributes:{
                     Thrust: 50,
-                    thrustDelta: 25,
+                    thrustDelta: 1000,
                     hoverHeight: 15,
-                    horizontalVel: pc.Vec2.ZERO,
-                    heading: pc.Vec2.ZERO,
                     headingVel: true
                 }
             });
             entity.script.create('droneController',{
                 attributes:{
-                    speed: 25
+                    speed: 20
                 }
-            });
+            }); 
             var planemodel = app.assets.find("drone.json");
             entity.addComponent("model");
-            entity.model.model = planemodel.resource;
+            entity.model.model = planemodel.resource.clone();
+
+            for(i = 0; i < 15; i++){
+                //add another plane
+                var box = new pc.Entity();
+                box.name = "box";
+                box.setPosition(10 * (Math.random() - 0.5),0,10 * (Math.random() - 0.5));
+                box.addComponent('script');
+                box.script.create('physicalbody',{
+                    attributes:{
+                        mass: 5,
+                        drag: 0
+                    }
+                });
+                box.script.create('physicalDroneDrive',{
+                    attributes:{
+                        Thrust: 50,
+                        thrustDelta: 1000,
+                        hoverHeight: 15,
+                        headingVel: true
+                    }
+                });
+                box.script.create('targetCruise',{
+                    attributes:{
+                        target: entity,
+                        range: 20,
+                        speed: 10,
+                        changeFrequency: 1,
+                        friendSpace: 5,
+                    }
+                });
+                box.script.create('ribbon',{
+                    attributes:{
+                        lifetime: 5,
+                        xoffset: - 0.5,
+                        yoffset: 0.5,
+                        height: 0.4
+                    }
+                });
+                box.addComponent("model");
+                box.model.model = planemodel.resource.clone();
+                friendList.addChild(box);
+            }
         }
     });
 };
@@ -223,8 +269,9 @@ for (var i = 0; i < requests.length; i++) {
 // Add Entities into the scene hierarchy
 app.root.addChild(camera);
 app.root.addChild(lightDir);
+app.root.addChild(entity);
+app.root.addChild(friendList);
 app.root.addChild(ui);
 ui.addChild(mainMenu);
 ui.addChild(game);
 ui.addChild(ground);
-ui.addChild(entity);
