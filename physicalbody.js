@@ -11,22 +11,17 @@ Physicalbody.attributes.add('drag',{
 });
 
 // initialize code called once per entity
-Physicalbody.prototype.initialize = function() {
-    
+Physicalbody.prototype.initialize = function() { 
     this.pos = new pc.Vec3();
     this.lastVel = new pc.Vec3();
     this.currentVel = new pc.Vec3();
     this.acceleration = new pc.Vec3();
     this.posDiff = new pc.Vec3();
-    this.resetPosition = new pc.Vec3();
-    this.resetPosition.x = this.entity.getPosition().x;
-    this.resetPosition.y = this.entity.getPosition().y;
-    this.resetPosition.z = this.entity.getPosition().z;
     
     this.app.on('presimulation', this.presim, this);
     this.app.on('simulation', this.simulation,this);
     this.app.on('aftsimulation', this.aftsim, this);
-    this.app.on('GameReset',this.reset,this);
+
     this.initialized = true;
 };
 
@@ -72,14 +67,9 @@ Physicalbody.prototype.addforce = function(force) {
 };
 
 Physicalbody.prototype.swap = function(old) {
+    this.initialized = false;
+    old.app.off('presimulation', old.presim, old);
+    old.app.off('simulation', old.simulation, old);
+    old.app.off('aftsimulation', old.aftsim, old);
     this.initialize();
-};
-
-Physicalbody.prototype.reset = function(){
-    this.entity.setPosition(this.resetPosition);
-    this.pos = new pc.Vec3();
-    this.lastVel = new pc.Vec3();
-    this.currentVel = new pc.Vec3();
-    this.acceleration = new pc.Vec3();
-    this.posDiff = new pc.Vec3();
 };

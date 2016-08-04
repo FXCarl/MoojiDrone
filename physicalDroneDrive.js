@@ -105,6 +105,7 @@ PhysicalDroneDrive.prototype.update = function(dt){
 // swap method called for script hot-reloading
 // inherit your script state here
 PhysicalDroneDrive.prototype.swap = function(old) {
+    old.app.on('fixedupdate', old.fixedupdate);
     this.initialize();
 };
 
