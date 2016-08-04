@@ -62,37 +62,37 @@ lightDir.setLocalEulerAngles(45, 90, 0);
 
 // All Assets Reqs
 var requests = [{
-    url: "EventInput.js",//————————————————————————————————Game
+    url: "script/EventInput.js",//————————————————————————————————Game
     type: "script"
 },{
-    url: "Physics.js",
+    url: "script/Physics.js",
     type: "script"
 },{
-    url: "PeilinNoise.js",
+    url: "script/PeilinNoise.js",
     type: "script"
 },{
-    url: "ribbon.js",//————————————————————————————————Player
+    url: "script/ribbon.js",//————————————————————————————————Player
     type: "script"
 },{
-    url: "physicalbody.js",
+    url: "script/physicalbody.js",
     type: "script"
 },{
-    url: "physicalDroneDrive.js",
+    url: "script/physicalDroneDrive.js",
     type: "script"
 },{
-    url: "DroneController.js",
+    url: "script/DroneController.js",
     type: "script"
 },{
-    url: "targetCruise.js",
+    url: "script/targetCruise.js",
     type: "script"
 },{
     url: "res/drone/drone.json",
     type: "model"
 },{
-    url: "follow.js",
+    url: "script/follow.js",
     type: "script"
 },{
-    url: "terrain.js",
+    url: "script/terrain.js",
     type: "script"
 },{
     url: "res/Mars/height.png",
