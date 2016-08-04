@@ -26,7 +26,6 @@ Physicalbody.prototype.initialize = function() {
     this.app.on('presimulation', this.presim, this);
     this.app.on('simulation', this.simulation,this);
     this.app.on('aftsimulation', this.aftsim, this);
-    this.app.on(this.entity.name+':RigidbodyAddForce',this.addforce,this);
     this.app.on('GameReset',this.reset,this);
     this.initialized = true;
 };

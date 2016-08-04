@@ -200,7 +200,7 @@ for (var i = 0; i < requests.length; i++) {
             entity.script.create('physicalbody',{
                 attributes:{
                     mass: 1,
-                    drag: 0
+                    drag: 0.01
                 }
             });
             
@@ -230,7 +230,7 @@ for (var i = 0; i < requests.length; i++) {
                 box.script.create('physicalbody',{
                     attributes:{
                         mass: 5,
-                        drag: 0
+                        drag: 0.01
                     }
                 });
                 box.script.create('physicalDroneDrive',{
