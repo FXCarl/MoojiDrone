@@ -159,12 +159,16 @@ for (var i = 0; i < requests.length; i++) {
             camera.script.create('follow',{
                 attributes:{
                     target: entity,
-                    distance: 45
+                    distance: 15
                 }
             });
             
             // build up terrain mesh
             var groundMat = app.assets.find("MarsGround.json");
+            var groundTex = app.assets.find("diffuse.jpg");
+            groundMat.resource.diffuseMap = groundTex.resource;
+            groundMat.resource.update();
+
             var groundHeight = app.assets.find("height.png");
             ground.addComponent("script");
             ground.script.create('terrain',{
@@ -178,25 +182,12 @@ for (var i = 0; i < requests.length; i++) {
                     subdivisions: 128
                 }
             });
-            var groundTex = app.assets.find("diffuse.jpg");
-            if(ground.model){
-                groundMat = ground.model.model.getMaterials()[0];
-                groundMat.diffuseMap = groundTex.resource;
-                groundMat.update();
-            }
-
+            
             // Set up entity behavior
             entity.name = "player";
             //add ribbon to entity
             entity.addComponent('script');
-            entity.script.create('ribbon',{
-                attributes:{
-                    lifetime: 5,
-                    xoffset: - 0.5,
-                    yoffset: 0.5,
-                    height: 0.4
-                }
-            });
+
             entity.script.create('physicalbody',{
                 attributes:{
                     mass: 1,
@@ -218,60 +209,26 @@ for (var i = 0; i < requests.length; i++) {
                 }
             }); 
             var planemodel = app.assets.find("drone.json");
-            entity.addComponent("model");
-            entity.model.model = planemodel.resource.clone();
-
-            for(i = 0; i < 15; i++){
-                //add another plane
-                var box = new pc.Entity();
-                box.name = "box";
-                box.setPosition(10 * (Math.random() - 0.5),0,10 * (Math.random() - 0.5));
-                box.addComponent('script');
-                box.script.create('physicalbody',{
-                    attributes:{
-                        mass: 5,
-                        drag: 0.01
-                    }
-                });
-                box.script.create('physicalDroneDrive',{
-                    attributes:{
-                        Thrust: 50,
-                        thrustDelta: 1000,
-                        hoverHeight: 15,
-                        headingVel: true
-                    }
-                });
-                box.script.create('targetCruise',{
-                    attributes:{
-                        target: entity,
-                        range: 20,
-                        speed: 10,
-                        changeFrequency: 1,
-                        friendSpace: 5,
-                    }
-                });
-                box.script.create('ribbon',{
-                    attributes:{
-                        lifetime: 5,
-                        xoffset: - 0.5,
-                        yoffset: 0.5,
-                        height: 0.4
-                    }
-                });
-                box.addComponent("model");
-                box.model.model = planemodel.resource.clone();
-                friendList.addChild(box);
-            }
+            entity.addComponent("model", {
+                type: 'asset',
+                asset: planemodel
+            });          
+    
+            // Add Entities into the scene hierarchy 
+            app.root.addChild(camera);
+            app.root.addChild(lightDir);
+            app.root.addChild(entity);
+            var another = entity.clone();
+            another.name = "another";
+            app.root.addChild(another);
+            another.setPosition(1,1,1);
+            app.root.addChild(ground);
+            another.destroy();
+            console.log(another);
         }
     });
 };
 
-// Add Entities into the scene hierarchy
-app.root.addChild(camera);
-app.root.addChild(lightDir);
-app.root.addChild(entity);
-app.root.addChild(friendList);
 app.root.addChild(ui);
 ui.addChild(mainMenu);
 ui.addChild(game);
-ui.addChild(ground);
