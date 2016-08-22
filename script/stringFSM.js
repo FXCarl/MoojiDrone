@@ -28,7 +28,7 @@ var stateMachine = (function(){
         this.generateCallback(e);
         this.events.push(e);
     }
-    fsm.prototype.removeevent = function(){
+    fsm.prototype.updateEventList = function(){
         for(n = 0;n < this.removelist.length;n++){
             for(i = 0;i<this.events.length;i++){
                 if(this.events[i].name === this.removelist[n]){
@@ -72,7 +72,7 @@ var stateMachine = (function(){
                 this['onenter'+e.to]();
             if(this['onafter'+e.name] instanceof Function)
                 this['onafter'+e.name]();
-            this.removeevent();
+            this.updateEventList();
         };
     };
     return function(name,cfg){return new fsm(name,cfg);};

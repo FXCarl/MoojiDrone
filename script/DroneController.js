@@ -12,6 +12,8 @@ DroneController.prototype.initialize = function() {
 
 // update code called every frame
 DroneController.prototype.playerMoveToward = function(x,z){
+    if(!this.entity.script)
+        return;
     // Anti Axis For this case
     var goto = new pc.Vec2(x,z);
     if(goto.x != 0 || goto.y != 0)
