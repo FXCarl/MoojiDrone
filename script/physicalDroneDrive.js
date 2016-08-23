@@ -53,7 +53,7 @@ PhysicalDroneDrive.prototype.fixedupdate = function(dt) {
     var maxThrust = pc.math.clamp(this.currentThrust + this.thrustDelta * dt, 0, this.maxThrust);
     var currentPos = this.pbody.pos;
     // Compute expect vertical thrust
-    var currentVVel = this.pbody.currentVel.y;
+    var currentVVel = this.pbody.vel.y;
     var vDist = this.hoverHeight - currentPos.y;
     // a = 2 * (d/t - v) / t
     var expectT = Math.max(1, Math.abs(currentVVel / this.gravity.length()));
@@ -63,7 +63,7 @@ PhysicalDroneDrive.prototype.fixedupdate = function(dt) {
     // Available Horizontal Thrust
     var useableHThrust = maxThrust - vThrust;
     // Compute expectr Horizontal thrust
-    var currentHVel = new pc.Vec2(this.pbody.currentVel.x, this.pbody.currentVel.z);
+    var currentHVel = new pc.Vec2(this.pbody.vel.x, this.pbody.vel.z);
     // a = (tgtv - v) / t [t = 1]
     var expectHAcc = this.horizontalVel.clone().sub(currentHVel);
     var expectHThrust = expectHAcc.scale(this.pbody.mass);
@@ -92,7 +92,7 @@ PhysicalDroneDrive.prototype.update = function(dt){
     // find body
     // heading
     if(this.headingVel){
-        this.heading.lerp(this.heading, new pc.Vec2(this.pbody.currentVel.x, this.pbody.currentVel.z), dt);
+        this.heading.lerp(this.heading, new pc.Vec2(this.pbody.vel.x, this.pbody.vel.z), dt);
     }
     if(this.heading.lengthSq() > 0){
         this.currentHeading.lerp(this.currentHeading, new pc.Vec3(this.heading.x, 0, this.heading.y), 0.5);
