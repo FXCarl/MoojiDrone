@@ -322,8 +322,8 @@ var Plane = (function(){
                     plane.entity.addComponent('script');
                     plane.entity.script.create('physicalbody',{
                         attributes:{
-                            mass: 1,
-                            drag: 0.001
+                            mass: 5,
+                            drag: 0
                         }
                     });
                     plane.entity.script.create('physicalDroneDrive',{
