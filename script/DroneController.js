@@ -7,20 +7,21 @@ DroneController.attributes.add('speed',{
 
 // initialize code called once per entity
 DroneController.prototype.initialize = function() {
+    this.drone = this.entity.script.physicalDroneDrive;
     this.app.on(this.entity.name + ':MoveToward', this.playerMoveToward, this);
 };
 
 // update code called every frame
 DroneController.prototype.playerMoveToward = function(x,z){
-    if(!this.entity.script)
+    if(!this.drone)
         return;
     // Anti Axis For this case
     var goto = new pc.Vec2(x,z);
-    if(goto.x != 0 || goto.y != 0)
+    if(goto.x != 0 || goto.y != 0){
         goto.normalize();
-    goto.scale((this.speed));
-    var drone = this.entity.script.physicalDroneDrive;
-    drone.horizontalVel = goto;
+        goto.scale((this.speed));
+    }
+    this.drone.horizontalVel = goto;
 };
 
 // swap method called for script hot-reloading
@@ -29,6 +30,3 @@ DroneController.prototype.swap = function(old) {
     old.app.off(this.entity.name + ':MoveToward', this.playerMoveToward, this);
     this.initialize();
 };
-
-// to learn more about script anatomy, please read:
-// http://developer.playcanvas.com/en/

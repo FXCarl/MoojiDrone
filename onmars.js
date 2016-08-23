@@ -345,6 +345,8 @@ var Plane = (function(){
                     var planemodel = app.assets.find("drone.json");
                     plane.entity.addComponent("model");
                     plane.entity.model.model = planemodel.resource.clone();
+                    //collision for chk collider
+                    plane.collision = null;
                 },
                 onafterborn:function(){
                     this.initialize();
@@ -369,7 +371,7 @@ var Plane = (function(){
 })();
 
 var Bullet = (function(){
-    var bullet = function(agent,movedelta){
+    var bullet = function(agent,movedelta,hurtpower){
         var bule = this;
         bule.stateMachine = new stateMachine('bullet',{
             initial:null,
@@ -383,10 +385,19 @@ var Bullet = (function(){
                 onbeforeborn:function(){
                     bule.agentID = agent.ID;
                     bule.movedelta = movedelta;//move direction and speed
-                    bule.entity = new pc.Entity();
+                    bule.entity = new pc.Entity();//bulletModel or ParticalEffect
+                    bule.collision = null;//collision for chk collider
+                    bule.action = new Action(hurtpower);
                     bule.entity.setPosition(agent.Plane.entity.getPosition());//borned position
                 },
-                onafterborn:function(){this.initialized();}
+                onafterborn:function(){this.initialized();},
+                onbeforehit:function(){
+                    //bule.action.Execute(target.Agent.Lefttime);
+                },
+                onbeforedestroy:function(){
+                    bule.entity.destroy();
+                    BulletList.pop(bule);
+                }
             }
         });
     };
@@ -395,4 +406,19 @@ var Bullet = (function(){
         BulletList.push(bul);
         return bul;
     };
+})();
+
+//Action is a act to do something
+var Action = (function(){
+    var Action = function(effectDepth){
+        this.effectDepth = effectDepth;
+    };
+    Action.prototype.Execute = function(aimdata){
+        if(typeof aimdata === typeof this.effectDepth)
+            aimdata -= this.effectDepth;
+    };
+
+    return function(effectDepth){
+        return new Action(effectDepth);
+    }
 })();

@@ -82,7 +82,7 @@ PhysicalDroneDrive.prototype.fixedupdate = function(dt) {
     }
     else{
         this.currentThrustVector = pc.Vec3.UP.clone();
-        this.currentQuat = pc.Quat.IDENTITY;
+        this.currentQuat = pc.Quat.IDENTITY.clone();
     }
     // Apply Thrust
     this.pbody.addforce(thrust);
@@ -99,6 +99,7 @@ PhysicalDroneDrive.prototype.update = function(dt){
     }
     // Attitude control
     var dir = this.currentQuat.transformVector(this.currentHeading);
+    dir.normalize();
     this.entity.lookAt(this.entity.getPosition().sub(dir));
 }
 
