@@ -30,7 +30,7 @@ Follow.prototype.update = function(dt) {
     pos.z += this.distance;
     pos.y += this.distance;
     this.vec.lerp(this.vec, pos, this.damping * (1-Math.exp(-20*dt)));
-    this.entity.setPosition(this.vec);
+    this.entity.setPosition(pos);
 };
 
 Follow.prototype.swap = function(old) {

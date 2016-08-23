@@ -322,26 +322,24 @@ var Plane = (function(){
                     plane.entity.addComponent('script');
                     plane.entity.script.create('physicalbody',{
                         attributes:{
-                            mass: 5,
-                            drag: 0
+                            mass: 1,
+                            drag: 0.001
                         }
                     });
                     plane.entity.script.create('physicalDroneDrive',{
                         attributes:{
                             Thrust: 50,
-                            thrustDelta: 50,
                             hoverHeight: 3,
-                            headingVel: true
                         }
                     });
-                    plane.entity.script.create('ribbon',{
+                    /*plane.entity.script.create('ribbon',{
                         attributes:{
-                            lifetime: 5,
-                            xoffset: - 0.5,
+                            lifetime: 1,
+                            xoffset: -0.5,
                             yoffset: 0.5,
                             height: 0.4
                         }
-                    });
+                    });*/
                     var planemodel = app.assets.find("drone.json");
                     plane.entity.addComponent("model");
                     plane.entity.model.model = planemodel.resource.clone();
