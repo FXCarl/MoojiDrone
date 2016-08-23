@@ -13,7 +13,7 @@ Follow.attributes.add('distance',{
 
 Follow.attributes.add('damping',{
     type: 'number',
-    default: 2
+    default: 0.2
 });
 
 // initialize code called once per entity
@@ -29,7 +29,7 @@ Follow.prototype.update = function(dt) {
     var pos = this.target.getPosition();
     pos.z += this.distance;
     pos.y += this.distance;
-    this.vec.lerp(this.vec, pos, 1 / Math.max(this.damping, 1));
+    this.vec.lerp(this.vec, pos, this.damping * (1-Math.exp(-20*dt)));
     this.entity.setPosition(this.vec);
 };
 
