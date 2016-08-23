@@ -6,19 +6,25 @@ Physics.attributes.add('fixedStep',{
 });
 
 Physics.prototype.initialize = function() {
-    this.gametime = 0;
+    this.timeahead = 0;
     this.fixedtime = 0;
 };
 
 Physics.prototype.update = function(dt) {
-    this.gametime += dt;
-    var timeDiff = 0;
-    this.app.fire('presimulation');
-    while(this.fixedtime < this.gametime){
-        this.app.fire('fixedupdate',this.fixedStep);
-        this.app.fire('simulation',this.fixedStep); // For PhysicalBody
-        this.fixedtime += this.fixedStep;
-        timeDiff = this.gametime - this.fixedtime;
-    };
-    this.app.fire('aftsimulation', timeDiff);
+    this.timeahead += dt;
+    if(this.timeahead > this.fixedtime){
+        this.timeahead -= this.fixedtime;
+        this.fixedtime = 0;
+        this.app.fire('presimulation');
+        while(this.fixedtime < this.timeahead){
+            this.app.fire('fixedupdate',this.fixedStep);
+            this.app.fire('simulation',this.fixedStep);
+            this.fixedtime += this.fixedStep;
+        }
+    }
+    this.app.fire('aftsimulation', this.timeahead/this.fixedtime);
+};
+
+Physics.prototype.swap = function(old) {
+    this.initialize();
 };
