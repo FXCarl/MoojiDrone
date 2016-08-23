@@ -5,13 +5,19 @@
         <meta charset='utf-8'>
         <link rel="stylesheet" type="text/css" href="style.css">
         <script src="lib/jquery-3.1.0.min.js"></script>
+        <script src = "lib/stringFSM.js"></script>
         <script src="lib/hammer.min.js"></script>
         <script src="lib/playcanvas-stable.js"></script>
     </head>
     <body>
         <canvas name= "Moojicanvas" id="application-canvas" style="position:fixed; z-index:-1;"></canvas>
-        <div name = "TouchPanel" id = "touchPanel" style = "position:fixed;top:0;left:0;width:100%; height:100%;display:block;"></div>
+        <div name = "TouchPanel" id = "touchPanel" style = "position:fixed;top:5%;left:0;width:100%; height:95%;display:block;"></div>
         <script src="startuptool.js"></script>
         <script src="onmars.js"></script>
+        <button onclick = "Game.connected();">connected</button>
+        <button onclick = "Game.userlog();Game.logged();">Login</button>
+        <button onclick = "Game.jumpin();">Jump In</button>
+        <button onclick = "if(player)player.stateMachine.timeover();else console.log('not gaming');">gameover</button>
+        <button onclick = "Game.return();">return</button>
     </body>
 </html>
