@@ -12,8 +12,7 @@ DroneController.prototype.playerMoveToward = function(x,z){
         return;
     // Anti Axis For this case
     var goto = new pc.Vec2(x,z);
-    var drone = this.entity.script.physicalDroneDrive;
-    drone.headingDirection = goto;
+    this.drone.headingDirection = goto;
 };
 
 // swap method called for script hot-reloading

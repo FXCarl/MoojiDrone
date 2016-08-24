@@ -1,17 +1,21 @@
 var canvas = document.getElementById("application-canvas");
 var app;
 var player;
+var Mars;
 var AgentList = [];//Local showed player List
 var BulletList = [];
+var ui = new DroneUI();
 
 var Game = new stateMachine("Game",{
         events:[
-            {name:'start',from:null,to:'connecting'}
+            {name:'start',from:null,to:'waitloading'},
+            {name:'connectserver',from:null,to:'connecting'}
         ],
         callbacks:{
-            onbeforestart:function(){
+            onenterwaitloading:function(){
+                //start Loading
+                ui.stateMachine.born();
                 //create app
-
                 // Disable I-bar cursor on click+drag
                 canvas.onselectstart = function () { return false; };
                 var devices = createInputDevices(canvas);
@@ -80,51 +84,74 @@ var Game = new stateMachine("Game",{
                 for (var i = 0; i < requests.length; i++) {
                     app.assets.loadFromUrl(requests[i].url, requests[i].type, function (err, asset) {
                         count--;
-                        if(count === 0)
-                            console.log('loaded');
+                        if(count === 0){
+                            Game.connectserver();
+                        }
                     });
                 };
             },
-            onafterstart:function(){
+            onbeforeconnectserver:function(){
+                //chk and destroy
+                if(Mars){Mars.destroy();Mars = undefined;}
+                clearagentlist();//clear agent List
+                clearbulletlist();//clear bullets List
+            },
+            onafterconnectserver:function(){
                 this.addevent({name:'connected',from:'connecting',to:'mainmenu'});
-                this.addevent({name:'lostconnect',from:null,to:'connecting'});
+                //————for test
+                this.connected();
+            },
+            onenterconnecting:function(){
+                //changeUI
+                ui.stateMachine.startconnect();
             },
             onbeforeconnected:function(){
-                //show mainmenu UI
-                
                 //set canvas
                 app.setCanvasFillMode(pc.FILLMODE_FILL_WINDOW);
                 app.setCanvasResolution(pc.RESOLUTION_AUTO);
                 //generate and initial terrian + sceneItem + camera + light
                 // Create an Entity with a camera component
-                var camera = new pc.Entity();
-                camera.name = 'Camera';
-                camera.addComponent("camera", {
-                    clearColor: new pc.Color(0,0,0)
-                });
-                camera.rotateLocal(-45, 0, 0);
-                camera.translateLocal(0, 0, 5);
-                camera.addComponent("audiolistener");
-                app.root.addChild(camera);
+                var camera = app.root.findByName('Camera');
+                    if(!camera){
+                    camera = new pc.Entity();
+                    camera.name = 'Camera';
+                    camera.addComponent("camera", {
+                        clearColor: new pc.Color(0,0,0)
+                    });
+                    camera.rotateLocal(-45, 0, 0);
+                    camera.translateLocal(0, 0, 5);
+                    camera.addComponent("audiolistener");
+                    app.root.addChild(camera);
+                }
                 // Create an Entity with a light component
-                var lightDir = new pc.Entity();
-                lightDir.addComponent("light", {
-                    type: "directional",
-                    color: new pc.Color(1, 1, 1),
-                    intensity: 1.2
-                });
-                lightDir.setLocalPosition(2, 2, -2);
-                lightDir.setLocalEulerAngles(60, 60, 0);
-                app.root.addChild(lightDir);
-                app.root.addComponent('script');
-                app.root.script.create('physics',{
-                    attributes:{
-                        fixedStep: 0.01
-                    }
-                });
+                var lightDir = app.root.findByName('DirectLight');
+                if(!lightDir){
+                    lightDir = new pc.Entity();
+                    lightDir.name = 'DirectLight';
+                    lightDir.addComponent("light", {
+                        type: "directional",
+                        color: new pc.Color(1, 1, 1),
+                        intensity: 1.2
+                    });
+                    lightDir.setLocalPosition(2, 2, -2);
+                    lightDir.setLocalEulerAngles(60, 60, 0);
+                    app.root.addChild(lightDir);
+                }
+                if(!app.root.script){
+                    app.root.addComponent('script');
+                    app.root.script.create('physics',{
+                        attributes:{
+                            fixedStep: 0.01
+                        }
+                    });
+                }
+                //generate Mars
+                if(!Mars)
+                    Mars = TerrianMaker();
 
-                //generate Mars 
-                var Mars = TerrianMaker();
+                //show mainmenu
+                //changeUI
+                ui.stateMachine.connected();
             },
             onafterconnected:function(){
                 this.addevent({name:'userlog',from:'mainmenu',to:'login'});
@@ -132,12 +159,16 @@ var Game = new stateMachine("Game",{
             onafteruserlog:function(){
                 this.addevent({name:'logged',from:'login',to:'pregamescene'});
                 this.addevent({name:'logfailed',from:'login',to:'mainmenu'});
+
+                //test
+                this.logged();
             },
             onbeforelogged:function(){
                 //show pregamesceneUI
-               
+                ui.stateMachine._2jump();
                 //Sync current agentList (include create gaming plane)
                 SyncAgentList();
+                DownBulletList();//get current bullets
             },
             onafterlogged:function(){
                 this.addevent({name:'jumpin',from:'pregamescene',to:'gaming'});
@@ -147,6 +178,7 @@ var Game = new stateMachine("Game",{
             },
             onbeforejumpin:function(){
                 //show gameUI
+                ui.stateMachine.jumpin();
                 
                 //start control
                 if(!app.root.script.eventInput)
@@ -182,13 +214,12 @@ var Game = new stateMachine("Game",{
                 this.addevent({name:'return',from:['gaming','endmenu'],to:'pregamescene'});
             },
             onbeforereturn:function(){
-                if(player){
-                    player.stateMachine.timeover();
-                }
                 //show pregamesceneUI
+                ui.stateMachine._2jump();
             },
             onbeforetimeover:function(){
                 //show endmenu UI
+                ui.stateMachine.gameover();
             }
         }
     });
@@ -226,16 +257,19 @@ var SyncAgentList = function(){
         //connect Server and get serve List
     //var newlist = server.getAgentList();//have not nefined
     /*
-    for(n=0;n<AgentList.count;n++){ //遍历本地列表，销毁本地多出的agent
+    for(n=0;n<AgentList.length;n++){ //遍历本地列表，销毁本地多出的agent
         if(findAgentinListbyID(AgentList[n].id,newlist)){
             //update AgentList[n].position/action
         }else if(AgentList[n].id !== player.id){
             AgentList[n].stateMachine.timeover();
         }
     }
-    for(n=0;n<newlist.count;n++){ //以服务器列表为准，添加本地没有的agent
+    for(n=0;n<newlist.length;n++){ //以服务器列表为准，添加本地没有的agent
         if(!findAgentinListbyID(newlist[n].id,AgentList)){
-            var agent = newlist[n].copy();
+            var agent = newlist[n].constructor();//new Agent(newlist[n].id);
+            for (var attr in newlist[n]) {
+                if (newlist[n].hasOwnProperty(attr)) bullet[attr] = newlist[n][attr];
+            }
             AgentList.push(agent);
             //or var agent = new Agent(newlist[n].id);
         }
@@ -243,7 +277,7 @@ var SyncAgentList = function(){
     */ 
     //compaire newlist/AgentList and destroy/generate/update Plane
     var findAgentinListbyID = function(id,list){
-        for(i=0;i<list.count;i++){
+        for(i=0;i<list.length;i++){
             if(list[i].id === id)
                 return true;
         }
@@ -252,6 +286,37 @@ var SyncAgentList = function(){
     console.log("Synced AgentList");
 };
 
+var DownBulletList = function(){
+    clearbulletlist();
+    //var newlist = server.getBulletList();
+    /*
+    for(n=0;n<newlist.length;n++){
+        if (null == newlist[n] || "object" != typeof newlist[n]) 
+            continue;
+        var bullet = newlist[n].constructor();
+        for (var attr in newlist[n]) {
+            if (newlist[n].hasOwnProperty(attr)) bullet[attr] = newlist[n][attr];
+        }
+        BulletList.push(bullet);
+    }
+    */ 
+};
+
+var clearagentlist = function(){
+    if(AgentList.length > 0)//clear player List
+    {
+        for(i=0;i<AgentList.length;i++){
+            AgentList[i].stateMachine.aboard();
+        }
+    }
+};
+var clearbulletlist = function(){
+    if(BulletList.length > 0){
+        for(i=0;i<BulletList.length;i++){
+            BulletList[i].stateMachine.destroy();
+        }
+    }
+};
 //——————————————————————————factories
 //generate new Agent  or  【ask serve to generate（and return myagent for control）】
 var Agent = (function(){
@@ -263,6 +328,7 @@ var Agent = (function(){
                 {name:'born',from:null,to:'boot'},
                 {name:'initialize',from:'boot',to:'alive'},
                 {name:'timeover',from:'alive',to:'deletedata'},
+                {name:'aboard',from:'alive',to:'deletedata'},
                 {name:'destroy',from:'deletedata',to:'boot'},
             ],
             callbacks:{
@@ -281,22 +347,35 @@ var Agent = (function(){
                     Game.timeover();
                     this.destroy();
                 },
+                onbeforeaboard:function(){
+                    age.plane.stateMachine.destroy();
+                },
+                onafteraboard:function(){
+                    Game.return();
+                    this.destroy();
+                },
                 onbeforedestroy:function(){
                     AgentList.pop(age);
-                    if(age.ID === player.ID)
+                    if(age.ID === player.ID){
+                        var camera = app.root.findByName('Camera');
+                        if(!camera.script||!camera.script.follow)
+                            return;
+                        camera.script.follow.target = null;
                         player = undefined;//是否可用这种方式舍弃全局变量的引用值？
+                    }
                 }
             }
         });
-        age.stateMachine.born();
     }
     agent.prototype.getInput = function(input){
         //listen input and set plane or shoot bullet
         //input.shootcommand => generateBullet
+        //input.movedelta => move [player]Plane
     };
     //agent.prototype.commandPlane = function(){}//control plane or shoot
     return function(id,plane){
         var agen = new agent(id,plane);
+        agen.stateMachine.born();
         AgentList.push(agen);
         return agen;
     };
@@ -343,6 +422,9 @@ var Plane = (function(){
                     var planemodel = app.assets.find("drone.json");
                     plane.entity.addComponent("model");
                     plane.entity.model.model = planemodel.resource.clone();
+                    //add 2 world
+                    app.root.addChild(plane.entity);
+
                     //collision for chk collider
                     plane.collision = null;
                 },
@@ -361,36 +443,42 @@ var Plane = (function(){
                 }
             }
         });
-        //add 2 world
-        plane.stateMachine.born();
-        app.root.addChild(this.entity);
     }
-    return function(agentid){return new plane(agentid);};
+    return function(agentid){
+        var pl = new plane(agentid);
+        pl.stateMachine.born();
+        return pl;
+    };
 })();
 
 var Bullet = (function(){
     var bullet = function(agent,movedelta,hurtpower){
         var bule = this;
+        bule.target = [];//target.length > 0=>hit
         bule.stateMachine = new stateMachine('bullet',{
             initial:null,
             events:[
                 {name:'born',from:null,to:'boot'},
                 {name:'initialized',from:'boot',to:'alive'},
                 {name:'hit',from:'alive',to:'boom'},
-                {name:'destroy',from:'boom',to:'boot'}
+                {name:'destroy',from:['boom','alive'],to:'boot'}
             ],
             callbacks:{
                 onbeforeborn:function(){
                     bule.agentID = agent.ID;
                     bule.movedelta = movedelta;//move direction and speed
                     bule.entity = new pc.Entity();//bulletModel or ParticalEffect
+                    bule.entity.setPosition(agent.Plane.entity.getPosition());//borned position
+                    //add 2 world
+                    app.root.addChild(bule.entity);
                     bule.collision = null;//collision for chk collider
                     bule.action = new Action(hurtpower);
-                    bule.entity.setPosition(agent.Plane.entity.getPosition());//borned position
                 },
                 onafterborn:function(){this.initialized();},
                 onbeforehit:function(){
-                    //bule.action.Execute(target.Agent.Lefttime);
+                    for(i=0;i<bule.target.length;i++){
+                        bule.action.Execute(target[i].Lefttime);
+                    }
                 },
                 onbeforedestroy:function(){
                     bule.entity.destroy();
@@ -401,6 +489,7 @@ var Bullet = (function(){
     };
     return function(agent,movedelta){
         var bul = new bullet(agent,movedelta);
+        bul.born();
         BulletList.push(bul);
         return bul;
     };
