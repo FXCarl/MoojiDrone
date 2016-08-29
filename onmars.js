@@ -8,7 +8,6 @@ var BulletList = [];
 var Game;
 var ui;
 
-$(document).ready(function(){
     canvas = document.getElementById("application-canvas");
     var clearagentlist = function(){
         if(AgentList.length > 0)//clear player List
@@ -25,28 +24,8 @@ $(document).ready(function(){
             }
         }
     };
-    var SyncAgentList = function(){
-            //connect Server and get serve List
-        //var newlist = server.getAgentList();//have not nefined
-        /*
-        for(n=0;n<AgentList.length;n++){ //遍历本地列表，销毁本地多出的agent
-            if(findAgentinListbyID(AgentList[n].id,newlist)){
-                //update AgentList[n].position/action
-            }else if(AgentList[n].id !== player.id){
-                AgentList[n].stateMachine.timeover();
-            }
-        }
-        for(n=0;n<newlist.length;n++){ //以服务器列表为准，添加本地没有的agent
-            if(!findAgentinListbyID(newlist[n].id,AgentList)){
-                var agent = newlist[n].constructor();//new Agent(newlist[n].id);
-                for (var attr in newlist[n]) {
-                    if (newlist[n].hasOwnProperty(attr)) bullet[attr] = newlist[n][attr];
-                }
-                AgentList.push(agent);
-                //or var agent = new Agent(newlist[n].id);
-            }
-        }
-        */ 
+
+    var SyncAgentList = function(newlist){
         //compaire newlist/AgentList and destroy/generate/update Plane
         var findAgentinListbyID = function(id,list){
             for(i=0;i<list.length;i++){
@@ -54,8 +33,20 @@ $(document).ready(function(){
                     return true;
             }
             return false;
+        };
+
+        for(n=0;n<AgentList.length;n++){ //遍历本地列表，销毁本地多出的agent
+            if(!findAgentinListbyID(AgentList[n].id,newlist)){
+                if(AgentList[n].id !== player.id){
+                    AgentList[n].stateMachine.timeover();
+                }
+            }
         }
-        console.log("Synced AgentList");
+        for(n=0;n<newlist.length;n++){ //以服务器列表为准，添加本地没有的agent
+            if(!findAgentinListbyID(newlist[n].id,AgentList)){
+                var agent = new Agent(newlist[n].id);
+            }
+        }
     };
 
     var DownBulletList = function(){
@@ -182,6 +173,7 @@ $(document).ready(function(){
                     onbeforeborn:function(){
                         plane.ID = agentid;
                         plane.entity = new pc.Entity();
+                        plane.entity.name = agentid;
                         plane.entity.addComponent('script');
                         plane.entity.script.create('physicalbody',{
                             attributes:{
@@ -294,6 +286,10 @@ $(document).ready(function(){
             return new Action(effectDepth);
         }
     })();
+    
+    
+var isonline = false;
+$(document).ready(function(){
     //————————————————————————————————factory end————————————————————
     ui = new DroneUI();
     Game = new stateMachine("Game",{
@@ -376,6 +372,7 @@ $(document).ready(function(){
                             count--;
                             if(count === 0){
                                 Game.connectserver();
+                                socket.emit('newConnect',mycilent);//tell server a new connect
                             }
                         });
                     };
@@ -388,8 +385,7 @@ $(document).ready(function(){
                 },
                 onafterconnectserver:function(){
                     this.addevent({name:'connected',from:'connecting',to:'mainmenu'});
-                    //————for test
-                    this.connected();
+                    Game.connected();
                 },
                 onenterconnecting:function(){
                     //changeUI
@@ -449,16 +445,10 @@ $(document).ready(function(){
                 onafteruserlog:function(){
                     this.addevent({name:'logged',from:'login',to:'pregamescene'});
                     this.addevent({name:'logfailed',from:'login',to:'mainmenu'});
-
-                    //test
-                    this.logged();
                 },
                 onbeforelogged:function(){
                     //show pregamesceneUI
                     ui.stateMachine._2jump();
-                    //Sync current agentList (include create gaming plane)
-                    SyncAgentList();
-                    DownBulletList();//get current bullets
                 },
                 onafterlogged:function(){
                     this.addevent({name:'jumpin',from:'pregamescene',to:'gaming'});
@@ -477,14 +467,12 @@ $(document).ready(function(){
                     //generate current player
                     var playerID = 0;//ask Serve to get agentID(by username?)
                     player = new Agent(playerID);
-                    player.plane.entity.name = "player";
                     player.plane.entity.script.create('droneController',{
                         attributes:{
                             speed: 30
                         }
                     }); 
-                    //upload Player to server
-                    SyncAgentList();
+                    player.plane.entity.script.droneController.startListen();
 
                     // Set up camera behavior
                     var camera = app.root.findByName('Camera');

@@ -22,7 +22,10 @@ EventInput.prototype.InputkeyDown = function(){
     if(this.app.keyboard.isPressed(pc.KEY_S)) {
        keyV.add(new pc.Vec2(0, 1));
     }
-    this.app.fire('player:MoveToward', keyV.x, keyV.y);
+    if(player){
+        pc.app.fire('Move' + player.id,keyV.x,keyV.y);
+        socket.emit('playerMove',new AgentMessage(player),keyV.x,keyV.y);
+    }
 };
 var touchOptions ={
         recognizers:[
@@ -33,6 +36,9 @@ var hammer = new Hammer(document.getElementById("touchPanel"), touchOptions);//w
 hammer.on('pan',function(ev){
     if(this.activeTouch === false){return false;}
     if( Math.abs(ev.deltaX) > 10 || Math.abs(ev.deltaY) > 10){
-        pc.app.fire('player:MoveToward',ev.deltaX,ev.deltaY);
+        if(player){
+            pc.app.fire('Move' + player.id,ev.deltaX,ev.deltaY);
+            socket.emit('playerMove',new AgentMessage(player),ev.deltaX,ev.deltaY);
+        }
     }
 });

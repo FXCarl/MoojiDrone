@@ -4,6 +4,7 @@
         <meta name='onMars' content='width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no' />
         <meta charset='utf-8'>
         <link rel="stylesheet" type="text/css" href="style.css">
+        <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
         <script src="lib/jquery-3.1.0.min.js"></script>
         <script src = "UI/DroneUI.js"></script>
         <script src = "lib/stringFSM.js"></script>
@@ -23,33 +24,41 @@
         </div>
         <div id = 'mainmenupanel' style="" class="overlay" id="main-menu">
             <div class="panel main-menu">
-                <a id = 'loginbtn' style="top: 10px; left: 195px;" class="btn btn-primary btn-play">
+                <a id = 'loginbtn' style="top: 10px; left: 220px;" class="btn btn-primary btn-play">
                     <span>Log In</span>
                 </a>
             </div>
         </div>
         <div id = 'jumpinpanel' style="display: none;" class="overlay" id="main-menu">
             <div class="panel main-menu">
-                <a id = 'jumpinbtn' style="top: 10px; left: 70px;" class="btn btn-primary btn-play">
+                <a id = 'jumpinbtn' style="top: 10px; left: 220px;" class="btn btn-primary btn-play">
                     <span>Jump In</span>
                 </a>
-                <a id = 'jumplostbtn' style="top: 10px; left: 400px;" class="btn">Lost Connect</a>
             </div>
         </div>
         <div id = 'gamingpanel' style="display: none;" class="overlay" id="main-menu">
             <div class="panel main-menu">
                 <a id = 'timeoverbtn' style="top: 10px; left: 10px;" class="btn">timeover</a>
                 <a id = 'aboardbtn' style="top: 10px; left: 430px;" class="btn">Aboard</a>
-                <a id = 'gaminglostbtn' style="top: 10px; left: 220px;" class="btn">Lost Connect</a>
             </div>
         </div>
         <div id = 'endpanel' style="display: none;" class="overlay" id="main-menu">
             <div class="panel main-menu">
-                <a id = 'returnbtn' style="top: 10px; left: 100px;" class="btn btn-primary btn-play">
+                <a id = 'returnbtn' style="top: 10px; left: 220px;" class="btn btn-primary btn-play">
                     <span>Return</span>
                 </a>
-                <a id = 'endlostbtn' style="top: 10px; left: 400px;" class="btn">Lost Connect</a>
             </div>
         </div>
+        <script>
+            function cilent(){
+                this.id;
+            }
+            var mycilent = new cilent();
+            var socket = io.connect("http://192.168.199.128:5500/", {
+                'force new connection': true,  // 是否允许建立新的连接
+                reconnect: true,           // 是否允许重连
+            });
+            //var socket = io.connect("http://192.168.199.128:5500/");
+        </script>
     </body>
 </html>

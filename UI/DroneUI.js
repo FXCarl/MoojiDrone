@@ -31,7 +31,7 @@ var DroneUI = (function(){
                         UI.mainmenu = $('#mainmenupanel');
                         var btnLogin = $('#loginbtn');
                         btnLogin.on('click', function () {
-                              $("#application-canvas").trigger('login');
+                              $("#application-canvas").trigger('customlog');
                         });
                     }
                     UI.mainmenu.hide();
@@ -44,10 +44,6 @@ var DroneUI = (function(){
                         var btnjumpin = $('#jumpinbtn');
                         btnjumpin.on('click', function () {
                               $("#application-canvas").trigger('jumpin');
-                        });
-                        var btnLost = $('#jumplostbtn');
-                        btnLost.on('click', function () {
-                              $("#application-canvas").trigger('lost');
                         });
                     }
                     UI.jumpmenu.hide();
@@ -63,10 +59,6 @@ var DroneUI = (function(){
                         btnaboard.on('click', function () {
                               $("#application-canvas").trigger('aboard');
                         });
-                        var btnLost = $('#gaminglostbtn');
-                        btnLost.on('click', function () {
-                              $("#application-canvas").trigger('lost');
-                        });
                     }
                     UI.gamemenu.hide();
 
@@ -76,10 +68,6 @@ var DroneUI = (function(){
                         var returnBtn = $('#returnbtn');
                         returnBtn.on('click', function () {
                               $("#application-canvas").trigger('return');
-                        });
-                        var btnLost = $('#endlostbtn');
-                        btnLost.on('click', function () {
-                              $("#application-canvas").trigger('lost');
                         });
                     }
                     UI.endmenu.hide();
@@ -132,29 +120,85 @@ var DroneUI = (function(){
     return function(){return new uigroup();};
 })();
 
+
+var AgentMessage = function(agent){
+    if(!agent)
+        return;
+    this.id = agent.id;
+    this.leftTime = agent.leftTime;
+};
 $(document).ready(function(){
-    $("#application-canvas").on('login',function(){
-        Game.userlog();//login game
+    var myAgentMessage;
+        //server only tell cilent [isonline]
+
+    socket.on('connected',function(cil){//recieve connect
+        isonline = true;
+        mycilent.id = cil.id;
     });
+    socket.on('disconnect',function(){//lost connect
+        isonline = false;
+    });
+
+
+    $("#application-canvas").on('login',function(){
+        Game.userlog();
+        socket.emit('userlog',mycilent);//[mycilent] -> username + password
+    });
+    $("#application-canvas").on('customlog',function(){
+        Game.userlog();
+        Game.logged();
+    });
+    socket.on('loginfailed',function(){
+        Game.logfailed();
+    });
+    socket.on('logsuccess',function(){
+        //username:passworld correct
+        Game.logged();
+    });
+
     $("#application-canvas").on('jumpin',function(){
         //UI.stateMachine.jumpin();
         Game.jumpin();//jumpin game
+        myAgentMessage = new AgentMessage(player)
+        socket.emit('agentjumpin',myAgentMessage);
     });
+    socket.on('mejumped',function(agent){
+        //copy agent data
+        player.id = agent.id;
+        myAgentMessage.id = agent.id;
+        player.plane.entity.script.droneController.startListen();
+    });
+
     $("#application-canvas").on('aboard',function(){
       //UI.stateMachine._2jump();
-      if(player)
+        socket.emit('aboard',myAgentMessage);
         player.stateMachine.aboard();// aboard game
     });
+    socket.on('aboarded',function(){
+        //copy agent data
+        console.log('aboarded!');
+    });
+
     $("#application-canvas").on('timeover',function(){
       //UI.stateMachine.gameover();
-      if(player)
+      if(player){
         player.stateMachine.timeover();//timeover
+        socket.emit('aboard',myAgentMessage);
+      }
     });
+
     $("#application-canvas").on('return',function(){
       //UI.stateMachine._2jump();
       Game.return();//to jump in menu
     });
-    $("#application-canvas").on('lost',function(){
-      Game.connectserver();
+
+    socket.on('syncAgentList',function(newlist){
+        //username:passworld correct
+        console.log('111111111' + newlist);
+        SyncAgentList(newlist);//have some problem
+    });
+    socket.on('agentMove',function(agent,x,y){
+        //username:passworld correct
+        pc.app.fire(agent.id + ':MoveToward',x,y);
     });
 });
