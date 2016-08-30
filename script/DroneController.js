@@ -1,9 +1,9 @@
 var DroneController = pc.createScript('droneController');
 
 // initialize code called once per entity
-DroneController.prototype.startListen = function() {
+DroneController.prototype.initialize = function() {
     this.drone = this.entity.script.physicalDroneDrive;
-    this.app.on('Move' + player.id, this.playerMove, this);
+    this.app.on('Move' + this.entity.name, this.playerMove, this);
 };
 // update code called every frame
 DroneController.prototype.playerMove = function(x,z){

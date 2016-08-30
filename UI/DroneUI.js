@@ -69,6 +69,10 @@ var DroneUI = (function(){
                         returnBtn.on('click', function () {
                               $("#application-canvas").trigger('return');
                         });
+                        var backBtn = $('#backsinglebtn');
+                        backBtn.on('click', function () {
+                              $("#application-canvas").trigger('back2single');
+                        });
                     }
                     UI.endmenu.hide();
                 },
@@ -128,7 +132,6 @@ var AgentMessage = function(agent){
     this.leftTime = agent.leftTime;
 };
 $(document).ready(function(){
-    var myAgentMessage;
         //server only tell cilent [isonline]
 
     socket.on('connected',function(cil){//recieve connect
@@ -139,10 +142,9 @@ $(document).ready(function(){
         isonline = false;
     });
 
-
     $("#application-canvas").on('login',function(){
         Game.userlog();
-        socket.emit('userlog',mycilent);//[mycilent] -> username + password
+        socket.emit('userlog',new AgentMessage(player));//[mycilent] -> username + password
     });
     $("#application-canvas").on('customlog',function(){
         Game.userlog();
@@ -157,48 +159,47 @@ $(document).ready(function(){
     });
 
     $("#application-canvas").on('jumpin',function(){
-        //UI.stateMachine.jumpin();
         Game.jumpin();//jumpin game
-        myAgentMessage = new AgentMessage(player)
-        socket.emit('agentjumpin',myAgentMessage);
-    });
-    socket.on('mejumped',function(agent){
-        //copy agent data
-        player.id = agent.id;
-        myAgentMessage.id = agent.id;
-        player.plane.entity.script.droneController.startListen();
+        socket.emit("agentjumpin",new AgentMessage(player));
     });
 
     $("#application-canvas").on('aboard',function(){
-      //UI.stateMachine._2jump();
-        socket.emit('aboard',myAgentMessage);
+        //UI.stateMachine._2jump();
+        socket.emit('aboard',new AgentMessage(player));
         player.stateMachine.aboard();// aboard game
     });
     socket.on('aboarded',function(){
         //copy agent data
-        console.log('aboarded!');
+        console.log(player.id + ' aboarded!');
     });
 
     $("#application-canvas").on('timeover',function(){
-      //UI.stateMachine.gameover();
-      if(player){
-        player.stateMachine.timeover();//timeover
-        socket.emit('aboard',myAgentMessage);
-      }
+        //UI.stateMachine.gameover();
+        if(player){
+            player.stateMachine.timeover();//timeover
+            socket.emit('aboard',new AgentMessage(player));
+        }
     });
 
     $("#application-canvas").on('return',function(){
-      //UI.stateMachine._2jump();
-      Game.return();//to jump in menu
+        //UI.stateMachine._2jump();
+        Game.return();//to jump in menu
+        socket.emit('return',new AgentMessage(player));
+    });
+    $("#application-canvas").on('back2single',function(){
+        //UI.stateMachine._2jump();
+        Game._2singlegame();//to jump in menu
     });
 
     socket.on('syncAgentList',function(newlist){
         //username:passworld correct
-        console.log('111111111' + newlist);
-        SyncAgentList(newlist);//have some problem
+        if(newlist)
+            SyncAgentList(newlist);
     });
     socket.on('agentMove',function(agent,x,y){
         //username:passworld correct
-        pc.app.fire(agent.id + ':MoveToward',x,y);
+        console.log('player : ' + player.id + '----Move' + agent.id);
+        if(!player || player.id !== agent.id)
+            pc.app.fire('Move' + agent.id,x,y);
     });
 });

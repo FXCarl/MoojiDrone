@@ -13,7 +13,8 @@ var ui;
         if(AgentList.length > 0)//clear player List
         {
             for(i=0;i<AgentList.length;i++){
-                AgentList[i].stateMachine.aboard();
+                if(AgentList[i].stateMachine.current === 'alive')
+                    AgentList[i].stateMachine.aboard();
             }
         }
     };
@@ -25,24 +26,23 @@ var ui;
         }
     };
 
+    var findAgentinListbyID = function(id,list){
+        for(i=0;i<list.length;i++){
+            if(list[i].id === id)
+                return true;
+        }
+        return false;
+    };
     var SyncAgentList = function(newlist){
+        console.log(newlist);
         //compaire newlist/AgentList and destroy/generate/update Plane
-        var findAgentinListbyID = function(id,list){
-            for(i=0;i<list.length;i++){
-                if(list[i].id === id)
-                    return true;
-            }
-            return false;
-        };
-
         for(n=0;n<AgentList.length;n++){ //遍历本地列表，销毁本地多出的agent
             if(!findAgentinListbyID(AgentList[n].id,newlist)){
-                if(AgentList[n].id !== player.id){
+                if(AgentList[n].id !== player.id)
                     AgentList[n].stateMachine.timeover();
-                }
             }
         }
-        for(n=0;n<newlist.length;n++){ //以服务器列表为准，添加本地没有的agent
+        for(n=0;n< newlist.length ;n++){ //以服务器列表为准，添加本地没有的agent
             if(!findAgentinListbyID(newlist[n].id,AgentList)){
                 var agent = new Agent(newlist[n].id);
             }
@@ -93,8 +93,10 @@ var ui;
     //——————————————————————————factories
     //generate new Agent  or  【ask serve to generate（and return myagent for control）】
     var Agent = (function(){
-        var agent = function(id){
+        var agent = function(ID){
             var age = this;
+            age.id = ID;//ID from Server
+            age.leftTime = 200;
             age.stateMachine = new stateMachine('Agent',{
                 initial:null,
                 events:[
@@ -106,9 +108,7 @@ var ui;
                 ],
                 callbacks:{
                     onbeforeborn:function(){
-                        age.ID = id;//ID from Server
-                        age.plane = new Plane(age.ID);//set after planeMaker
-                        age.leftTime = 200;
+                        age.plane = new Plane(age.id);//set after planeMaker
                     },
                     onafterborn:function(){
                         this.initialize();
@@ -119,19 +119,24 @@ var ui;
                     },
                     onaftertimeover:function(){
                         //stop alert
-                        Game.timeover();
+                        if(Game.current === "gaming")
+                            Game.timeover();
                         this.destroy();
                     },
                     onbeforeaboard:function(){
                         age.plane.stateMachine.destroy();
                     },
                     onafteraboard:function(){
-                        Game.return();
+                        if(Game.current === "gaming")
+                            Game.return();
                         this.destroy();
                     },
                     onbeforedestroy:function(){
-                        AgentList.pop(age);
-                        if(age.ID === player.ID){
+                        for(i=0;i<AgentList.length;i++){
+                            if(AgentList[i].id === age.id)
+                                AgentList.pop(AgentList[i]);
+                        }
+                        if(age.id === player.ID){
                             var camera = app.root.findByName('Camera');
                             if(!camera.script||!camera.script.follow)
                                 return;
@@ -142,16 +147,11 @@ var ui;
                 }
             });
         }
-        agent.prototype.getInput = function(input){
-            //listen input and set plane or shoot bullet
-            //input.shootcommand => generateBullet
-            //input.movedelta => move [player]Plane
-        };
-        //agent.prototype.commandPlane = function(){}//control plane or shoot
-        return function(id,plane){
-            var agen = new agent(id,plane);
+        return function(id){
+            var agen = new agent(id);
             agen.stateMachine.born();
-            AgentList.push(agen);
+            if(!findAgentinListbyID(id,AgentList))
+                AgentList.push(agen);
             return agen;
         };
     })();
@@ -160,6 +160,9 @@ var ui;
         var plane = function(agentid){
             // Set PlaneID from agentList/or create a new plane id
             var plane = this;
+            plane.id = agentid;
+            plane.entity = new pc.Entity();
+            plane.entity.name = agentid;
             //set PlaneFSM
             plane.stateMachine = new stateMachine('Plane',{
                 initial:null,
@@ -171,9 +174,6 @@ var ui;
                 ],
                 callbacks:{
                     onbeforeborn:function(){
-                        plane.ID = agentid;
-                        plane.entity = new pc.Entity();
-                        plane.entity.name = agentid;
                         plane.entity.addComponent('script');
                         plane.entity.script.create('physicalbody',{
                             attributes:{
@@ -187,14 +187,11 @@ var ui;
                                 hoverHeight: 3,
                             }
                         });
-                        /*plane.entity.script.create('ribbon',{
+                        plane.entity.script.create('droneController',{
                             attributes:{
-                                lifetime: 1,
-                                xoffset: -0.5,
-                                yoffset: 0.5,
-                                height: 0.4
+                                speed: 30
                             }
-                        });*/
+                        });
                         var planemodel = app.assets.find("drone.json");
                         plane.entity.addComponent("model");
                         plane.entity.model.model = planemodel.resource.clone();
@@ -210,7 +207,6 @@ var ui;
                     onbeforetimeover:function(){
                         //Lost Control and Fall
                         //show boom effect
-
                     },
                     onaftertimeover:function(){
                         this.destroy();
@@ -231,6 +227,10 @@ var ui;
     var Bullet = (function(){
         var bullet = function(agent,movedelta,hurtpower){
             var bule = this;
+            bule.agentid = agent.ID;
+            bule.movedelta = movedelta;//move direction and speed
+            bule.hurt = hurtpower;
+            bule.entity = new pc.Entity();//bulletModel or ParticalEffect
             bule.target = [];//target.length > 0=>hit
             bule.stateMachine = new stateMachine('bullet',{
                 initial:null,
@@ -242,14 +242,11 @@ var ui;
                 ],
                 callbacks:{
                     onbeforeborn:function(){
-                        bule.agentID = agent.ID;
-                        bule.movedelta = movedelta;//move direction and speed
-                        bule.entity = new pc.Entity();//bulletModel or ParticalEffect
                         bule.entity.setPosition(agent.Plane.entity.getPosition());//borned position
                         //add 2 world
                         app.root.addChild(bule.entity);
                         bule.collision = null;//collision for chk collider
-                        bule.action = new Action(hurtpower);
+                        bule.action = new Action(bule.hurt);
                     },
                     onafterborn:function(){this.initialized();},
                     onbeforehit:function(){
@@ -259,14 +256,17 @@ var ui;
                     },
                     onbeforedestroy:function(){
                         bule.entity.destroy();
-                        BulletList.pop(bule);
+                        for(i=0;i<BulletList.length;i++){
+                            if(BulletList[i].id === bule.ID)
+                                BulletList.pop(BulletList[i]);
+                        }
                     }
                 }
             });
         };
         return function(agent,movedelta){
             var bul = new bullet(agent,movedelta);
-            bul.born();
+            bul.stateMachine.born();
             BulletList.push(bul);
             return bul;
         };
@@ -287,15 +287,76 @@ var ui;
         }
     })();
     
-    
+    var playerMaker = function(){
+        //generate current player
+        var player = new Agent(mycilent.id);
+        //start control
+        if(!app.root.script.eventInput)
+            app.root.script.create('eventInput');
+
+        // Set up camera behavior
+        var camera = app.root.findByName('Camera');
+        if(!camera.script)
+            camera.addComponent('script');
+        if(!camera.script.follow)
+            camera.script.create('follow',{
+                attributes:{
+                    target: player.plane.entity,
+                    distance: 25
+                }
+            });
+        camera.script.follow.target = player.plane.entity;
+        return player;
+    };
 var isonline = false;
 $(document).ready(function(){
     //————————————————————————————————factory end————————————————————
     ui = new DroneUI();
+    var localScene;
+    var localgame = new stateMachine("localgame",{
+        initial:'null',
+        events:[
+            {name:'start',from:'null',to:'localgaming'},
+            {name:'end',from:'localgaming',to:'destroy'},
+            {name:'destroied',from:'destroy',to:'null'}
+        ],
+        callbacks:{
+            onbeforestart:function(){
+                //destroy MainGameScene
+                if(Mars){Mars.destroy();Mars = undefined;}
+                var lightDir = app.root.findByName('DirectLight')
+                if(!lightDir){
+                    lightDir = new pc.Entity();
+                    lightDir.name = 'DirectLight';
+                    lightDir.addComponent("light", {
+                        type: "directional",
+                        intensity: 1.2
+                    });
+                    lightDir.setLocalPosition(2, 2, -2);
+                    lightDir.setLocalEulerAngles(60, 60, 0);
+                    app.root.addChild(lightDir);
+                }
+                lightDir.light.color = new pc.Color(0, 1, 1);
+                localScene = TerrianMaker();
+                //generate other tags
+                player = playerMaker();
+            },
+            onbeforeend:function(){
+                localScene.destroy();
+                //destroy other tags
+                if(app.root.findByName('DirectLight')){
+                    app.root.findByName('DirectLight').light.color = new pc.Color(1, 1, 1);
+                }
+                player.stateMachine.aboard();
+                player = undefined;
+            },
+            onafterend:function(){this.destroied()}
+        }
+    });
     Game = new stateMachine("Game",{
             events:[
                 {name:'start',from:null,to:'waitloading'},
-                {name:'connectserver',from:null,to:'connecting'}
+                {name:'_2singlegame',from:null,to:'connecting'}
             ],
             callbacks:{
                 onenterwaitloading:function(){
@@ -371,19 +432,19 @@ $(document).ready(function(){
                         app.assets.loadFromUrl(requests[i].url, requests[i].type, function (err, asset) {
                             count--;
                             if(count === 0){
-                                Game.connectserver();
+                                Game._2singlegame();
                                 socket.emit('newConnect',mycilent);//tell server a new connect
                             }
                         });
                     };
                 },
-                onbeforeconnectserver:function(){
+                onbefore_2singlegame:function(){
                     //chk and destroy
                     if(Mars){Mars.destroy();Mars = undefined;}
                     clearagentlist();//clear agent List
                     clearbulletlist();//clear bullets List
                 },
-                onafterconnectserver:function(){
+                onafter_2singlegame:function(){
                     this.addevent({name:'connected',from:'connecting',to:'mainmenu'});
                     Game.connected();
                 },
@@ -398,7 +459,7 @@ $(document).ready(function(){
                     //generate and initial terrian + sceneItem + camera + light
                     // Create an Entity with a camera component
                     var camera = app.root.findByName('Camera');
-                        if(!camera){
+                    if(!camera){
                         camera = new pc.Entity();
                         camera.name = 'Camera';
                         camera.addComponent("camera", {
@@ -409,6 +470,32 @@ $(document).ready(function(){
                         camera.addComponent("audiolistener");
                         app.root.addChild(camera);
                     }
+                    camera.setLocalPosition(0,0,0);
+                    if(!app.root.script){
+                        app.root.addComponent('script');
+                        app.root.script.create('physics',{
+                            attributes:{
+                                fixedStep: 0.01
+                            }
+                        });
+                    }
+                    //show mainmenu
+                    //changeUI
+                    ui.stateMachine.connected();
+                    localgame.start();
+                },
+                onafterconnected:function(){
+                    this.addevent({name:'userlog',from:'mainmenu',to:'login'});
+                },
+                onafteruserlog:function(){
+                    this.addevent({name:'logged',from:'login',to:'pregamescene'});
+                    this.addevent({name:'logfailed',from:'login',to:'mainmenu'});
+                },
+                onbeforelogged:function(){
+                    //show pregamesceneUI
+                    ui.stateMachine._2jump();
+                    localgame.end();
+
                     // Create an Entity with a light component
                     var lightDir = app.root.findByName('DirectLight');
                     if(!lightDir){
@@ -423,35 +510,18 @@ $(document).ready(function(){
                         lightDir.setLocalEulerAngles(60, 60, 0);
                         app.root.addChild(lightDir);
                     }
-                    if(!app.root.script){
-                        app.root.addComponent('script');
-                        app.root.script.create('physics',{
-                            attributes:{
-                                fixedStep: 0.01
-                            }
-                        });
-                    }
                     //generate Mars
                     if(!Mars)
                         Mars = TerrianMaker();
-
-                    //show mainmenu
-                    //changeUI
-                    ui.stateMachine.connected();
-                },
-                onafterconnected:function(){
-                    this.addevent({name:'userlog',from:'mainmenu',to:'login'});
-                },
-                onafteruserlog:function(){
-                    this.addevent({name:'logged',from:'login',to:'pregamescene'});
-                    this.addevent({name:'logfailed',from:'login',to:'mainmenu'});
-                },
-                onbeforelogged:function(){
-                    //show pregamesceneUI
-                    ui.stateMachine._2jump();
                 },
                 onafterlogged:function(){
                     this.addevent({name:'jumpin',from:'pregamescene',to:'gaming'});
+                },
+                onenterpregamescene:function(){
+                    var camera = app.root.findByName('Camera');
+                    if(camera){
+                        camera.setLocalPosition(0,0,0);
+                    }
                 },
                 onbeforelogfailed:function(){
                     console.log('Login Failed!Please cheack your username or passweord!');
@@ -459,33 +529,7 @@ $(document).ready(function(){
                 onbeforejumpin:function(){
                     //show gameUI
                     ui.stateMachine.jumpin();
-                    
-                    //start control
-                    if(!app.root.script.eventInput)
-                        app.root.script.create('eventInput');
-
-                    //generate current player
-                    var playerID = 0;//ask Serve to get agentID(by username?)
-                    player = new Agent(playerID);
-                    player.plane.entity.script.create('droneController',{
-                        attributes:{
-                            speed: 30
-                        }
-                    }); 
-                    player.plane.entity.script.droneController.startListen();
-
-                    // Set up camera behavior
-                    var camera = app.root.findByName('Camera');
-                    if(!camera.script)
-                        camera.addComponent('script');
-                    if(!camera.script.follow)
-                        camera.script.create('follow',{
-                            attributes:{
-                                target: player.plane.entity,
-                                distance: 25
-                            }
-                        });
-                    camera.script.follow.target = player.plane.entity;
+                    player = playerMaker();
                 },
                 onafterjumpin:function(){
                     this.addevent({name:'timeover',from:'gaming',to:'endmenu'});
