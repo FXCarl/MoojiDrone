@@ -100,9 +100,10 @@ Physicalbody.prototype.addtorque = function(torque){
     this.aAcceleration.z += torque.z * inv_inertia;
 }
 
+/*
 Physicalbody.prototype.swap = function(old) {
     old.app.off('presimulation', old.presim, old);
     old.app.off('simulation', old.simulation, old);
     old.app.off('aftsimulation', old.aftsim, old);
     this.initialize();
-};
+};*/

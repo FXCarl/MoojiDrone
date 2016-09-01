@@ -24,7 +24,8 @@ Physics.prototype.update = function(dt) {
     }
     this.app.fire('aftsimulation', this.timeahead/this.fixedtime);
 };
-
+/*
 Physics.prototype.swap = function(old) {
     this.initialize();
 };
+*/

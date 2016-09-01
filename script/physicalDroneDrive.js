@@ -78,10 +78,11 @@ PhysicalDroneDrive.prototype.fixedupdate = function(dt) {
     this.pbody.addforce(this.thrust);
     this.thrust.set(0, 0, 0);
 };
-
+/*
 // swap method called for script hot-reloading
 // inherit your script state here
 PhysicalDroneDrive.prototype.swap = function(old) {
     old.app.off('fixedupdate', old.fixedupdate);
     this.initialize();
 };
+*/
