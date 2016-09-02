@@ -7,9 +7,6 @@ DroneController.prototype.fixedupdate = function(dt){
     if(!drone)
         return;
     drone.headingDirection = this.goto;
-    /*
-    if(this.goto.lengthSq() > 0 && this.entity.name != -1 && this.entity.name === mycilent.id)
-        socket.emit('playerMove',{id:this.entity.name,x:this.goto.x,y:this.goto.y});*/
     this.sendtime -= dt;
     if(this.sendtime<0 && this.entity.name != -1 && this.entity.name === mycilent.id){
         var pos = this.entity.getPosition();
