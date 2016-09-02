@@ -200,8 +200,10 @@ var ui;
             planeentity.addComponent("model");
             planeentity.model.model = planemodel.resource.clone();
             planeentity.addComponent('script');
-            planeentity.script.create('physicalbody');
-            planeentity.script.create('physicalDroneDrive');
+            if(agentid===mycilent.id){
+                planeentity.script.create('physicalbody');
+                planeentity.script.create('physicalDroneDrive');
+            }
             planeentity.script.create('droneController');
             //add 2 world
             app.root.addChild(planeentity);

@@ -190,7 +190,7 @@ $(document).ready(function(){
     });
     socket.on('agentMove',function(data){
         if(data.id >= 0 && (data.id !== mycilent.id)){
-            pc.app.fire('Move' + data.id,data.x,data.y);
+            pc.app.fire('AgentMove' + data.id,data);
         }
     });
 });
