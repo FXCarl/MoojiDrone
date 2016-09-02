@@ -35,7 +35,7 @@ var DroneUI = (function(){
                         });
                     }
                     UI.mainmenu.hide();
-
+                    
                         //loging menu
 
                         //pre menu
@@ -132,7 +132,6 @@ var AgentMessage = function(agent){
     this.leftTime = agent.leftTime;
 };
 $(document).ready(function(){
-        //server only tell cilent [isonline]
     socket.on('connected',function(cil){//recieve connect
         isonline = true;
         mycilent.id = cil.id;
@@ -144,7 +143,7 @@ $(document).ready(function(){
 
     $("#application-canvas").on('login',function(){
         Game.userlog();
-        socket.emit('userlog');//[mycilent] -> username + password
+        socket.emit('userlog');
     });
     socket.on('logsuccess',function(){
         console.log(mycilent.id + " logsuccess!");
@@ -163,39 +162,34 @@ $(document).ready(function(){
     });
 
     $("#application-canvas").on('aboard',function(){
-        //UI.stateMachine._2jump();
-        socket.emit('AgentDead',new AgentMessage(player));
-        player.stateMachine.aboard();// aboard game
+        if(player){
+            socket.emit('AgentDead',new AgentMessage(player));
+            player.stateMachine.aboard();// aboard game
+        }
     });
 
     $("#application-canvas").on('timeover',function(){
-        //UI.stateMachine.gameover();
         if(player){
-            player.stateMachine.timeover();//timeover
             socket.emit('AgentDead',new AgentMessage(player));
+            player.stateMachine.timeover();//timeover
         }
     });
 
     $("#application-canvas").on('return',function(){
-        //UI.stateMachine._2jump();
         Game.return();//to jump in menu
-        socket.emit('return',new AgentMessage(player));
+        socket.emit('return');
     });
+
     $("#application-canvas").on('back2single',function(){
-        //UI.stateMachine._2jump();
         Game._2singlegame();//to jump in menu
     });
 
     socket.on('syncAgentList',function(newlist){
-        //username:passworld correct
-        if(newlist && localgame.current !== "localgaming")
+        if(localgame.current !== "localgaming")
             SyncAgentList(newlist);
     });
     socket.on('agentMove',function(data){
-        //username:passworld correct
-        //socket.broadcast send => agent.id !== player.id
-        if(data.id != -1 && (data.id !== mycilent.id)){
-            console.log(data.id + ' server agentMove');
+        if(data.id >= 0 && (data.id !== mycilent.id)){
             pc.app.fire('Move' + data.id,data.x,data.y);
         }
     });

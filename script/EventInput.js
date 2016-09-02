@@ -1,5 +1,5 @@
 var EventInput = pc.createScript('eventInput');
-
+var index = 0;
 EventInput.prototype.update = function(dt){
     this.InputkeyDown();
 };
@@ -22,17 +22,6 @@ EventInput.prototype.InputkeyDown = function(){
        keyV.add(new pc.Vec2(0, 1));
         pressed = true;
     }
-
-    if(this.app.keyboard.wasPressed(pc.KEY_T)) {
-        for(i=0;i<AgentList.length;i++){
-            if(AgentList[i])console.log(AgentList[i].plane.entity.name);else console.log('null');
-           // SyncAgentList();
-        }
-    }
-    if(player && this.app.keyboard.wasPressed(pc.KEY_G)) {
-            AgentList[player.id].plane.entity.destroy();
-    }
-
     if(pressed && player){
         pc.app.fire('Move' + player.id,keyV.x,keyV.y);
     }

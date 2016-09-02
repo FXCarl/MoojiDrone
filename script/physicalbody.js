@@ -1,22 +1,11 @@
 var Physicalbody = pc.createScript('physicalbody');
-
-Physicalbody.attributes.add('mass',{
-    type : 'number',
-    default : 1
-});
-
-Physicalbody.attributes.add('radius',{
-    type : 'number',
-    default : 1
-});
-
-Physicalbody.attributes.add('drag',{
-    type : 'number',
-    default : 0
-});
-
 // initialize code called once per entity
 Physicalbody.prototype.initialize = function() { 
+    //attributes
+    this.mass = 1;
+    this.radius = 1;
+    this.drag = 0.001;
+    //data
     this.pos = new pc.Vec3();
     this.rot = new pc.Quat();
     this.vel = new pc.Vec3();

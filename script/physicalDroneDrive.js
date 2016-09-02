@@ -1,46 +1,18 @@
 var PhysicalDroneDrive = pc.createScript('physicalDroneDrive');
 
-PhysicalDroneDrive.attributes.add('maxThrust',{
-    type: 'number',
-    title: 'Max Thrust',
-    placeholder: 'N',
-    default: 50
-});
-
-PhysicalDroneDrive.attributes.add('maxSpeed',{
-    type: 'number',
-    title: 'Max Speed',
-    placeholder: 'm/s',
-    default: 50
-});
-
-PhysicalDroneDrive.attributes.add('maxG',{
-    type: 'number',
-    title: 'Max g-force',
-    placeholder: 'g',
-    default: 3
-});
-
-PhysicalDroneDrive.attributes.add('hoverHeight',{
-    type: 'number',
-    title: 'Expect Height',
-    placeholder: 'm',
-    defualt: 50
-});
-
-PhysicalDroneDrive.attributes.add('headingDirection',{
-    type: 'vec2',
-    title: 'Heading Direction',
-    default: pc.Vec2.ZERO
-});
-
 // initialize code called once per entity
 PhysicalDroneDrive.prototype.initialize = function() {
+    //attributes
+    this.maxThrust = 50;
+    this.maxSpeed = 50;
+    this.maxG = 3;
+    this.hoverHeight = 3;
     // local var
     this.gravity = new pc.Vec3(0, -3.71, 0); // we are on Mars !
     this.gravityForce = new pc.Vec3(0, 0, 0);
     this.currentPos = new pc.Vec3(0, 0, 0);
     this.thrust = new pc.Vec3(0, 0, 0);
+    this.headingDirection = new pc.Vec2();
     // start simulation
     this.pbody = this.entity.script.physicalbody;
     this.app.on('fixedupdate', this.fixedupdate, this);
@@ -78,11 +50,3 @@ PhysicalDroneDrive.prototype.fixedupdate = function(dt) {
     this.pbody.addforce(this.thrust);
     this.thrust.set(0, 0, 0);
 };
-/*
-// swap method called for script hot-reloading
-// inherit your script state here
-PhysicalDroneDrive.prototype.swap = function(old) {
-    old.app.off('fixedupdate', old.fixedupdate);
-    this.initialize();
-};
-*/

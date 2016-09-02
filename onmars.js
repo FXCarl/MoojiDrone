@@ -11,22 +11,17 @@ var ui;
 
     canvas = document.getElementById("application-canvas");
     var clearagentlist = function(){
-        if(AgentList.length > 0)//clear player List
-        {
-            for(i=0;i<AgentList.length;i++){
-                if(AgentList[i] && AgentList[i].stateMachine.current === 'alive')
-                    AgentList[i].stateMachine.aboard();
-                delete AgentList[i];
-            }
+        for(i=0;i<AgentList.length;i++){
+            if(AgentList[i] && AgentList[i].stateMachine.current === 'alive')
+                AgentList[i].stateMachine.aboard();
+            delete AgentList[i];
         }
     };
     var clearbulletlist = function(){
-        if(BulletList.length > 0){
-            for(i=0;i<BulletList.length;i++){
-                if(BulletList[i] && BulletList[i].stateMachine.current === 'alive')
-                    BulletList[i].stateMachine.destroy();
-                delete BulletList[i];
-            }
+        for(i=0;i<BulletList.length;i++){
+            if(BulletList[i] && BulletList[i].stateMachine.current === 'alive')
+                BulletList[i].stateMachine.destroy();
+            delete BulletList[i];
         }
     };
 
@@ -34,7 +29,7 @@ var ui;
         //compaire newlist/AgentList and destroy/generate/update Plane
         for(n=0;n<AgentList.length;n++){ //遍历本地列表，销毁本地多出的agent
             if(AgentList[n] && !newlist[n]){
-                if(player && n === player.id)
+                if(player && n === mycilent.id)
                     continue;
                 if(AgentList[n].stateMachine.current === 'alive')
                     AgentList[n].stateMachine.timeover();
@@ -119,7 +114,7 @@ var ui;
                     },
                     onaftertimeover:function(){
                         //stop alert
-                        if(player && age.id === player.id && age.id != -1)
+                        if(player && age.id === mycilent.id && age.id != -1)
                             Game.timeover();
                         this.destroy();
                     },
@@ -127,7 +122,7 @@ var ui;
                         age.plane.stateMachine.destroy();
                     },
                     onafteraboard:function(){
-                        if(player && age.id === player.id && age.id != -1)
+                        if(player && age.id === mycilent.id && age.id != -1)
                             Game.return();
                         this.destroy();
                     },
@@ -135,12 +130,12 @@ var ui;
                         if(age.id >= 0 && AgentList[age.id]){
                             delete AgentList[age.id];
                         }
-                        if(player && age.id === player.id){
+                        if(player && age.id === mycilent.id){
                             var camera = app.root.findByName('Camera');
                             if(!camera.script||!camera.script.follow)
                                 return;
                             camera.script.follow.target = null;
-                            camera.setLocalPosition(0,25,-20);
+                            camera.setPosition(0,25,-20);
                             player = undefined;//是否可用这种方式舍弃全局变量的引用值？
                         }
                     }
@@ -149,7 +144,7 @@ var ui;
         }
         return function(id){
             var agen = new agent(id);
-            if(id >= 0)
+            if(id >= 0 && !AgentList[id])
                 AgentList[id] = agen;
             agen.stateMachine.born();
             return agen;
@@ -161,27 +156,7 @@ var ui;
             // Set PlaneID from agentList/or create a new plane id
             var plane = this;
             plane.id = agentid;
-            plane.entity = new pc.Entity();
-            plane.entity.name = plane.id;
-            plane.entity.addComponent('script');
-            plane.entity.script.create('physicalbody',{
-                attributes:{
-                    mass: 1,
-                    drag: 0.001
-                }
-            });
-            plane.entity.script.create('physicalDroneDrive',{
-                attributes:{
-                    Thrust: 50,
-                    hoverHeight: 3,
-                }
-            });
-            plane.entity.script.create('droneController');
-            var planemodel = app.assets.find("drone.json");
-            plane.entity.addComponent("model");
-            plane.entity.model.model = planemodel.resource.clone();
-            //add 2 world
-            app.root.addChild(plane.entity);
+            plane.entity = generatePlaneEntity(agentid);
             //set PlaneFSM
             plane.stateMachine = new stateMachine('Plane',{
                 initial:null,
@@ -200,7 +175,7 @@ var ui;
                         this.initialize();
                     },
                     onbeforetimeover:function(){
-                        //Lost Control and Fall
+                        //Lost Control and Fall 
                         //show boom effect
                     },
                     onaftertimeover:function(){
@@ -218,6 +193,29 @@ var ui;
             return pl;
         };
     })();
+    var generatePlaneEntity = function(agentid){
+            var planeentity = new pc.Entity();
+            planeentity.name = agentid;
+            var planemodel = app.assets.find("drone.json");
+            planeentity.addComponent("model");
+            planeentity.model.model = planemodel.resource.clone();
+            planeentity.addComponent('script');
+            planeentity.script.create('physicalbody');
+            planeentity.script.create('physicalDroneDrive');
+            planeentity.script.create('droneController');
+            //add 2 world
+            app.root.addChild(planeentity);
+            for(i=0;i<(agentid+1);i++){
+                var box = new pc.Entity();
+                box.addComponent("model",{
+                    type:'box'
+                });
+                box.setLocalPosition(0,0,-2*i);
+                planeentity.addChild(box);
+            }
+            //planeentity.enabled = false;
+            return planeentity;
+    };
 
     var Bullet = (function(){
         var bullet = function(agent,movedelta,hurtpower){
@@ -297,30 +295,6 @@ var ui;
             });
         camera.script.follow.target = player.plane.entity;
         return player;
-    };
-    var initialplaneentity = function(){
-            planeentity = new pc.Entity();
-            planeentity.name = 'PlaneEntity';
-            var planemodel = app.assets.find("drone.json");
-            planeentity.addComponent("model");
-            planeentity.model.model = planemodel.resource.clone();
-            planeentity.addComponent('script');
-            planeentity.script.create('physicalbody',{
-                attributes:{
-                    mass: 1,
-                    drag: 0.001
-                }
-            });
-            planeentity.script.create('physicalDroneDrive',{
-                attributes:{
-                    Thrust: 50,
-                    hoverHeight: 3,
-                }
-            });
-            planeentity.script.create('droneController');
-            //add 2 world
-            app.root.addChild(planeentity);
-            //planeentity.enabled = false;
     };
 var isonline = false;
 $(document).ready(function(){
@@ -481,7 +455,7 @@ $(document).ready(function(){
                         camera.addComponent("audiolistener");
                         app.root.addChild(camera);
                     }
-                    camera.setLocalPosition(0,25,-20);
+                    camera.setPosition(0,25,-20);
                     if(!app.root.script){
                         app.root.addComponent('script');
                         app.root.script.create('physics',{
@@ -532,7 +506,7 @@ $(document).ready(function(){
                 onenterpregamescene:function(){
                     var camera = app.root.findByName('Camera');
                     if(camera){
-                        camera.setLocalPosition(0,25,-20);
+                        camera.setPosition(0,25,-20);
                         camera.script.follow.target = null;
                     }
                 },
