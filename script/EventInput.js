@@ -22,6 +22,17 @@ EventInput.prototype.InputkeyDown = function(){
        keyV.add(new pc.Vec2(0, 1));
         pressed = true;
     }
+    if(this.app.keyboard.wasPressed(pc.KEY_SPACE)) {
+        new Bullet(player,0.1,1);//agent,movespeed,hurtpower
+        socket.emit('Addbullet',{
+            agentid:player.id,
+            speed:0.1,
+            power:1
+        });
+    }
+    if(this.app.keyboard.wasPressed(pc.KEY_G)) {
+        console.log(BulletList);
+    }
     if(pressed && player){
         pc.app.fire('Move' + player.id,keyV.x,keyV.y);
     }

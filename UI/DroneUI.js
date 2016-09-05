@@ -193,4 +193,8 @@ $(document).ready(function(){
             pc.app.fire('AgentMove' + data.id,data);
         }
     });
+
+    socket.on('Addbullet',function(data){
+        AddBullet(data);
+    })
 });

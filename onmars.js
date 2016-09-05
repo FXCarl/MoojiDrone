@@ -40,25 +40,14 @@ var ui;
                 new Agent(n);
             }
         }
-        console.log(AgentList);
     };
 
-    var DownBulletList = function(){
-        clearbulletlist();
-        //var newlist = server.getBulletList();
-        /*
-        for(n=0;n<newlist.length;n++){
-            if (null == newlist[n] || "object" != typeof newlist[n]) 
-                continue;
-            var bullet = newlist[n].constructor();
-            for (var attr in newlist[n]) {
-                if (newlist[n].hasOwnProperty(attr)) bullet[attr] = newlist[n][attr];
-            }
-            if(!BulletList[bullet.agentid])
-                BulletList[bullet.agentid] = bullet;
-        }
-        */ 
+    var AddBullet = function(data){
+        if(!AgentList[data.agentid])
+            return;
+        new Bullet(AgentList[data.agentid],data.speed,data.power);
     };
+
     var TerrianMaker = function(){
         // build up terrain mesh
         var ground = new pc.Entity();
@@ -220,30 +209,40 @@ var ui;
     };
 
     var Bullet = (function(){
-        var bullet = function(agent,movedelta,hurtpower){
+        var bullet = function(agent,movespeed,hurtpower){
             var bule = this;
             bule.agentid = agent.id;
-            bule.movedelta = movedelta;//move direction and speed
+            bule.movespeed = movespeed;//move direction and speed
             bule.hurt = hurtpower;
-            bule.entity = new pc.Entity();//bulletModel or ParticalEffect
             bule.target = [];//target.length > 0=>hit
             bule.stateMachine = new stateMachine('bullet',{
-                initial:null,
+                initial:'boot',
                 events:[
-                    {name:'born',from:null,to:'boot'},
-                    {name:'initialized',from:'boot',to:'alive'},
+                    {name:'born',from:'boot',to:'alive'},
                     {name:'hit',from:'alive',to:'boom'},
                     {name:'destroy',from:['boom','alive'],to:'boot'}
                 ],
                 callbacks:{
                     onbeforeborn:function(){
-                        bule.entity.setPosition(agent.Plane.entity.getPosition());//borned position
+                        //generete bullet entity
+                        bule.entity = new pc.Entity();//bulletModel or ParticalEffect
+                        bule.entity.addComponent("model",{
+                            type:'sphere'
+                        });
+                        bule.entity.addComponent('script');
+                        bule.entity.script.create('bulletMove');
+                        var planeDir = agent.plane.entity.getEulerAngles();
+                        bule.entity.setEulerAngles(planeDir);
+                        bule.entity.script.bulletMove.stateMachine = this;
+                        bule.entity.script.bulletMove.moveSpeed = bule.movespeed;
+                        var generatePos = agent.plane.entity.getPosition();
+                        bule.entity.setPosition(generatePos);//borned position
+                        //generete bullet entity end
                         //add 2 world
                         app.root.addChild(bule.entity);
                         bule.collision = null;//collision for chk collider
                         bule.action = new Action(bule.hurt);
                     },
-                    onafterborn:function(){this.initialized();},
                     onbeforehit:function(){
                         for(i=0;i<bule.target.length;i++){
                             bule.action.Execute(target[i].Lefttime);
@@ -251,17 +250,15 @@ var ui;
                     },
                     onbeforedestroy:function(){
                         bule.entity.destroy();
-                        if(bule.id >= 0 && BulletList[bule.agentid])
-                            delete BulletList[bule.agentid];
+                        BulletList.pop(bule);
                     }
                 }
             });
         };
-        return function(agent,movedelta){
-            var bul = new bullet(agent,movedelta);
+        return function(agent,movespeed,movedelta){
+            var bul = new bullet(agent,movespeed,movedelta);
             bul.stateMachine.born();
-            if(agent.id >= 0 && !BulletList[agent.id])
-                BulletList[agent.id] = bul;
+            BulletList.push(bul);
             return bul;
         };
     })();
@@ -396,6 +393,9 @@ $(document).ready(function(){
                         type: "script"
                     },{
                         url: "script/DroneController.js",
+                        type: "script"
+                    },{
+                        url: "script/BulletMove.js",
                         type: "script"
                     },{
                         url: "script/follow.js",//——————————————————————————Camera
