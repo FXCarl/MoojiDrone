@@ -231,12 +231,12 @@ var ui;
                         });
                         bule.entity.addComponent('script');
                         bule.entity.script.create('bulletMove');
-                        var planeDir = agent.plane.entity.getEulerAngles();
-                        bule.entity.setEulerAngles(planeDir);
-                        bule.entity.script.bulletMove.stateMachine = this;
                         bule.entity.script.bulletMove.moveSpeed = bule.movespeed;
                         var generatePos = agent.plane.entity.getPosition();
                         bule.entity.setPosition(generatePos);//borned position
+                        var planeDir = agent.plane.entity.getEulerAngles();
+                        bule.entity.setEulerAngles(planeDir);//set direction
+                        bule.entity.script.bulletMove.stateMachine = this;
                         //generete bullet entity end
                         //add 2 world
                         app.root.addChild(bule.entity);
@@ -255,8 +255,8 @@ var ui;
                 }
             });
         };
-        return function(agent,movespeed,movedelta){
-            var bul = new bullet(agent,movespeed,movedelta);
+        return function(agent,movespeed,hurtpower){
+            var bul = new bullet(agent,movespeed,hurtpower);
             bul.stateMachine.born();
             BulletList.push(bul);
             return bul;
@@ -424,7 +424,7 @@ $(document).ready(function(){
                             count--;
                             if(count === 0){
                                 Game._2singlegame();
-                                socket.emit('newConnect',mycilent);//tell server a new connect
+                                //socket.emit('newConnect',mycilent);//tell server a new connect
                             }
                         });
                     };
