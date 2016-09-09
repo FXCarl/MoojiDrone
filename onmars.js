@@ -14,30 +14,26 @@ var ui;
         for(i=0;i<AgentList.length;i++){
             if(AgentList[i] && AgentList[i].stateMachine.current === 'alive')
                 AgentList[i].stateMachine.aboard();
-            delete AgentList[i];
         }
     };
     var clearbulletlist = function(){
         for(i=0;i<BulletList.length;i++){
             if(BulletList[i] && BulletList[i].stateMachine.current === 'alive')
                 BulletList[i].stateMachine.destroy();
-            delete BulletList[i];
         }
     };
 
-    var SyncAgentList = function(newlist){
-        //compaire newlist/AgentList and destroy/generate/update Plane
-        for(n=0;n<AgentList.length;n++){ //遍历本地列表，销毁本地多出的agent
-            if(AgentList[n] && !newlist[n]){
-                if(player && n === mycilent.id)
+    var newUserJump = function(id){
+        new Agent(id);
+    };
+    var deleteAgent = function(id){
+        if(AgentList.length>0){
+            for(i=(AgentList.length-1);i>=0;i--){
+                if(!AgentList[i])
                     continue;
-                if(AgentList[n].stateMachine.current === 'alive')
-                    AgentList[n].stateMachine.timeover();
-            }
-        }
-        for(n=0;n< newlist.length ;n++){ //以服务器列表为准，添加本地没有的agent
-            if(newlist[n] && !AgentList[n]){
-                new Agent(n);
+                if(AgentList[i].id == id){
+                    delete AgentList[i];
+                }
             }
         }
     };
@@ -103,7 +99,7 @@ var ui;
                     },
                     onaftertimeover:function(){
                         //stop alert
-                        if(player && age.id === mycilent.id && age.id != -1)
+                        if(player && age.id === currentUser.id && age.id != -1)
                             Game.timeover();
                         this.destroy();
                     },
@@ -111,15 +107,13 @@ var ui;
                         age.plane.stateMachine.destroy();
                     },
                     onafteraboard:function(){
-                        if(player && age.id === mycilent.id && age.id != -1)
+                        if(player && age.id === currentUser.id && age.id != -1)
                             Game.return();
                         this.destroy();
                     },
                     onbeforedestroy:function(){
-                        if(age.id >= 0 && AgentList[age.id]){
-                            delete AgentList[age.id];
-                        }
-                        if(player && age.id === mycilent.id){
+                        deleteAgent(age.id);
+                        if(player && age.id === currentUser.id){
                             var camera = app.root.findByName('Camera');
                             if(!camera.script||!camera.script.follow)
                                 return;
@@ -133,8 +127,7 @@ var ui;
         }
         return function(id){
             var agen = new agent(id);
-            if(id >= 0 && !AgentList[id])
-                AgentList[id] = agen;
+            AgentList.push(agen);
             agen.stateMachine.born();
             return agen;
         };
@@ -189,13 +182,14 @@ var ui;
             planeentity.addComponent("model");
             planeentity.model.model = planemodel.resource.clone();
             planeentity.addComponent('script');
-            if(agentid===mycilent.id){
+            if(agentid===currentUser.id){
                 planeentity.script.create('physicalbody');
                 planeentity.script.create('physicalDroneDrive');
             }
             planeentity.script.create('droneController');
             //add 2 world
             app.root.addChild(planeentity);
+            /*//区分
             for(i=0;i<(agentid+1);i++){
                 var box = new pc.Entity();
                 box.addComponent("model",{
@@ -203,7 +197,7 @@ var ui;
                 });
                 box.setLocalPosition(0,0,-2*i);
                 planeentity.addChild(box);
-            }
+            }*/
             //planeentity.enabled = false;
             return planeentity;
     };
@@ -280,7 +274,7 @@ var ui;
     
     var playerMaker = function(){
         //generate current player
-        var player = new Agent(mycilent.id);
+        var player = new Agent(currentUser.id);
         // Set up camera behavior
         var camera = app.root.findByName('Camera');
         if(!camera.script)
@@ -424,7 +418,7 @@ $(document).ready(function(){
                             count--;
                             if(count === 0){
                                 Game._2singlegame();
-                                //socket.emit('newConnect',mycilent);//tell server a new connect
+                                //socket.emit('newConnect',currentUser);//tell server a new connect
                             }
                         });
                     };

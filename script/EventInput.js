@@ -30,9 +30,6 @@ EventInput.prototype.InputkeyDown = function(){
             power:1
         });
     }
-    if(this.app.keyboard.wasPressed(pc.KEY_G)) {
-        console.log(BulletList);
-    }
     if(pressed && player){
         pc.app.fire('Move' + player.id,keyV.x,keyV.y);
     }

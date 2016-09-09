@@ -10,7 +10,9 @@ var realtime = new Realtime({
   appId: 'BFDAr3xLGtvjhtVvy3RWO5NM-gzGzoHsz',
   region: 'cn', // 美国节点为 "us"
 });
-var currentUser;
+var currentUser; 
+var ChatingRoom;
+
 
 var DroneUI = (function(){
     var uigroup = function(){
@@ -95,19 +97,7 @@ var DroneUI = (function(){
                         UI.chatpanel =  $('#chatpanel');
                         $('#inputblock').hide();
                         $('#chatinput').on('click',function(){
-                            var message = {
-                                name:'',//your nick name、id
-                                word:''
-                            };
-                            message.word = $('#words').val();
-                            message.name = currentUser.id;
-                            //send message
-                            $('#words').val('');
-                            ChatingRoom.send(
-                                new AV.TextMessage(message.name + ' : ' + message.word)
-                            ).then(function(message) {
-                                $('#messages').append($('<li>').text(message.text));
-                            }).catch(console.error);
+                              $("#application-canvas").trigger('speak');
                         });
 
                         //in the speak team
@@ -205,45 +195,6 @@ var AgentMessage = function(agent){
     this.leftTime = agent.leftTime;
 };
 $(document).ready(function(){
-    /*socket.on('connected',function(cil){//recieve connect
-        isonline = true;
-        mycilent.id = cil.id;
-    });
-    socket.on('disconnect',function(){//lost connect
-        isonline = false;
-        Game._2singlegame();
-    });*/
-
-
-    /*
-    socket.on('logsuccess',function(){
-        console.log(mycilent.id + " logsuccess!");
-    });*/
-
-    $("#application-canvas").on('customlog',function(){
-        AV.User.logIn('User1', '123').then(
-            function (loginedUser) {
-                realtime.createIMClient(loginedUser.attributes.username).then(function(user) {
-                    currentUser = user;
-                    user.on('message', function(message, conversation) {
-                        $('#messages').append($('<li>').text(message.text));
-                    });
-                    return user.getConversation('57d1248f0e3dd90069bec762');//DroneWaitRoom.id
-                }).then(function(conversation) {
-                    ChatingRoom = conversation;
-                    return conversation.join();
-                }).then(function(conversation) {
-                    $("#application-canvas").trigger('login');
-                    console.log('登陆成功！');
-                }).catch(console.error.bind(console));
-            },
-            function (error) {
-                alert(error);
-            }
-        );
-        //Game.userlog();
-    });
-
     $('#application-canvas').on('userlog',function(){
         var username = $('#loginusername').val();
         if(!username){
@@ -255,12 +206,43 @@ $(document).ready(function(){
             console.log('Please Enter password!');
             return;
         }
-        AV.User.logIn(username, password).then(
+        AV.User.logIn(username,password).then(
             function (loginedUser) {
-                realtime.createIMClient(loginedUser.attributes.username).then(function(user) {
+                //nick name 以后自己设置
+                    if(!loginedUser.attributes.nickname){
+                        loginedUser.set('nickname', '['+loginedUser.attributes.username+']');
+                        loginedUser.save();
+                    }
+                    realtime.createIMClient(loginedUser.attributes.nickname).then(function(user) {
                     currentUser = user;
                     user.on('message', function(message, conversation) {
-                        $('#messages').append($('<li>').text(message.text));
+                        switch(message.text){
+                            case 'userwords':
+                                $('#messages').append($('<li>').text(message.getAttributes().username + ' : ' + message.getAttributes().words));
+                                break;
+                            case 'userjumpin':
+                                $('#messages').append($('<li>').text('—— ' + message.getAttributes().username + ' Jump!'));
+                                newUserJump(message.getAttributes().username);
+                                break;
+                            case 'agentmove':
+                                //console.log(message.getAttributes());
+                                var data = message.getAttributes();
+                                pc.app.fire('AgentMove' + data.id,data);
+                                break;
+                            case 'agentstatechange':
+                                var data = message.getAttributes();
+                                for(i=(AgentList.length-1);i>=0;i--){
+                                    if(!AgentList[i])
+                                        continue;
+                                    if(AgentList[i].id === data.agentid){
+                                        console.log(AgentList[i].stateMachine[data.trans]);
+                                        AgentList[i].stateMachine[data.trans]();
+                                        break;
+                                    }
+                                }
+                                break;
+                            default: console.log('Error type!');break;
+                        }
                     });
                     return user.getConversation('57d1248f0e3dd90069bec762');//DroneWaitRoom.id
                 }).then(function(conversation) {
@@ -287,10 +269,20 @@ $(document).ready(function(){
     $("#application-canvas").on('jumpin',function(){
         Game.jumpin();//jumpin game
        // socket.emit("agentjumpin",new AgentMessage(player));
+       var userjumpin = new TextMessage('userjumpin');
+        userjumpin.setAttributes({
+            username:currentUser.id,//your nick name、id
+        });
+        //send message
+        ChatingRoom.send(userjumpin).then(function(message) {
+            $('#messages').append($('<li>').text('—— You Jumped!'));
+        }).catch(console.error);
     });
 
     $("#application-canvas").on('aboard',function(){
         if(player){
+            //send agent aboard message
+            AgentStateChange(player.id,'aboard');
             //socket.emit('AgentDead',new AgentMessage(player));
             player.stateMachine.aboard();// aboard game
         }
@@ -298,6 +290,8 @@ $(document).ready(function(){
 
     $("#application-canvas").on('timeover',function(){
         if(player){
+            //send agent timeover message
+            AgentStateChange(player.id,'timeover');
             //socket.emit('AgentDead',new AgentMessage(player));
             player.stateMachine.timeover();//timeover
         }
@@ -312,17 +306,44 @@ $(document).ready(function(){
         Game._2singlegame();//to jump in menu
     });
 
-    /*socket.on('syncAgentList',function(newlist){
-        if(localgame.current !== "localgaming")
-            SyncAgentList(newlist);
+//——userspeak
+    $("#application-canvas").on('speak',function(){
+        //send message
+        if(!ChatingRoom)return;
+        var wordsmessage = new TextMessage('userwords');
+        wordsmessage.setAttributes({
+            username:currentUser.id,//your nick name、id
+            words:$('#words').val()
+        });
+        ChatingRoom.send(wordsmessage).then(function(message) {
+            $('#messages').append($('<li>').text(message.getAttributes().username + ' : ' + message.getAttributes().words));
+        }).catch(console.error);
+        $('#words').val('');
     });
-    socket.on('agentMove',function(data){
-        if(data.id >= 0 && (data.id !== mycilent.id)){
-            pc.app.fire('AgentMove' + data.id,data);
-        }
-    });
-
-    socket.on('Addbullet',function(data){
-        AddBullet(data);
-    });*/
 });
+//——playermove
+    var SelfMove = function(data){
+        var planemove = new TextMessage('agentmove');
+        planemove.setAttributes({
+            id:data.id,
+            x:data.x,
+            y:data.y,
+            z:data.z,
+            rx:data.rx,
+            ry:data.ry,
+            rz:data.rz
+        });
+        //send message  不能用！ 1-间隔；2-量太大
+        if(!ChatingRoom)return;
+        ChatingRoom.send(planemove).then(function(message) {}).catch(console.error);
+    };
+
+//——player state change
+    var AgentStateChange = function(agentid,trans){
+        var changemessage = new TextMessage('agentstatechange');
+        changemessage.setAttributes({
+            agentid:agentid,//your nick name、id
+            trans:trans
+        });
+        ChatingRoom.send(changemessage).then(function(message) {}).catch(console.error);
+    }

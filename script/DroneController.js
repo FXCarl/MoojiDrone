@@ -8,14 +8,16 @@ DroneController.prototype.fixedupdate = function(dt){
         return;
     drone.headingDirection = this.goto;
     this.sendtime -= dt;
-    if(this.sendtime<0 && this.entity.name != -1 && this.entity.name === mycilent.id){
+    if(this.sendtime<0 && this.entity.name === currentUser.id){
         var pos = this.entity.getPosition();
         var rota = this.entity.getEulerAngles();
-        socket.emit('playerMove',{
+        var movedata = {
             id:this.entity.name,
             x:pos.x,y:pos.y,z:pos.z,
             rx:rota.x,ry:rota.y,rz:rota.z
-        });
+        }
+        //sendMessage
+        SelfMove(movedata);
         this.sendtime=0.01;
     }
     this.goto.set(0,0);
