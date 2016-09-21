@@ -1,0 +1,403 @@
+body {
+    margin: 0;
+    padding:0;
+}
+
+p {
+    margin: 0;
+    padding: 0;
+}
+
+.ui_container {
+	width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.3);
+    position: absolute;
+    float: left;
+    top:0;
+}
+
+.image_bg {
+    background-image: url(img/bg.jpg);
+    background-size:cover;
+    width:100%;
+    height:100%;
+    position: absolute;
+    float: left;
+}
+
+/* Loading */
+
+.image_loading_cover {
+    width: 682px;
+    height: 504px;
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.75);
+    background-color: rgba(0,0,0,0.43);
+    position: relative;
+    float: left;
+    left: 50%;
+    top: 50%;
+    margin-top: -252px;
+    margin-left: -341px;
+}
+
+.image_loading_content {
+    background-image: url(img/loading/loading_01.jpg);
+    background-size: cover;
+    width: 663px;
+    height: 483px;
+    position: relative;
+    float: left;
+    left: 10px;
+    top: 10px;
+}
+
+.text_loading {
+    width:346px;
+    height:27px;
+    background-color:rgba(0,0,0,1);
+    border: 1px solid #999;
+    position: relative;
+    float: left;
+    left: 50%;
+    margin-left: -514px;
+    top: 100%;
+    margin-top: -38px;
+    text-align: center;
+}
+
+.text_loading_p {
+    color:#eee;
+    line-height:140%;
+    font-size: 16px;
+}
+
+/* Login */
+
+.login_boarder {
+    width: 274px;
+    height: 182px;
+    background-color: rgba(14,14,14,0.43);
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.43);
+    float: left;
+    position: relative;
+    text-align: center;
+    color:#ddd;
+    top: 100%;
+    margin-top: -312px;
+    left: 46px;
+}
+
+p.login_tile {
+    font-size:26px;
+    line-height: 260%;
+}
+
+.login_guest {
+    width: 274px;
+    height: 35px;
+    background-color: rgba(54,42,33,0.43);
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.43);
+    float: left;
+    position: relative;
+    text-align: center;
+    color:#ddd;
+    top: 100%;
+    margin-top: -110px;
+    left: 46px;
+}
+
+.login_guest p {
+    line-height: 35px;
+}
+
+.sign_up {
+    width: 274px;
+    height: 35px;
+    background-color: rgba(54,42,33,0.43);
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.43);
+    float: left;
+    position: relative;
+    text-align: center;
+    color:#ddd;
+    top: 100%;
+    margin-top: -55px;
+    left: 46px;
+}
+
+.sign_up p {
+    line-height: 35px;
+}
+
+.login_boarder input {
+    color: #E7A72B;
+}
+
+.input_acc {
+    width: 246px;
+    height: 25px;
+    background-color:  rgba(36,32,29,0.6);
+    border:1px solid rgba(145,139,138,0.6);
+    float:left;
+    margin-top: 10px;
+    margin-left: 14px;
+    color: #E7A72B;
+}
+
+.input_pw {
+    width: 246px;
+    height: 25px;
+    background-color:  rgba(36,32,29,0.6);
+    border:1px solid rgba(145,139,138,0.6);
+    float:left;
+    margin-top: 20px;
+    margin-left: 14px;
+}
+
+.input_acc p {
+    float: left;
+    margin-left:5px;
+    line-height: 25px;
+    color: #E7A72B;
+}
+
+.input_pw p {
+    float: left;
+    margin-left:5px;
+    line-height: 25px;
+    color: #E7A72B;
+}
+
+input {
+    background-color:rgba(0,0,0,0);
+    border: 0;
+    width: 190px;
+    float:left;
+}
+
+input focus {
+    outline-color:  #999;
+}
+
+/* Menu */
+
+.points_list_menu {
+    width:170px;
+    height: 333px;
+    background-color: rgba(14,14,14,0.43);
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.75);
+    float: left;
+    position: relative;
+    top:50%;
+    margin-top:-247px;
+    left: 100%;
+    margin-left: -186px;
+}
+
+.points_list_title {
+    color: #E7A72B;
+    font-size: 14px;
+    height: 70px;
+    text-align: center;
+    line-height: 70px;
+}
+
+.user_info_menu {
+    color: #ddd;
+    width: 211px;
+    height: 56px;
+    background-color: rgba(0,0,0,0.43);
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.75);
+    float: left;
+    position: relative;
+    top:100%;
+    margin-top: -56px;
+    margin-left: 0px;
+    text-align: center;
+    line-height: 180%;
+}
+
+.chat_input {
+    width:274px;
+    height:35px;
+    background-color: rgba(14,14,14,0.43);
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.75);
+    float: left;
+    position: relative;
+    top:100%;
+    margin-top:-35px;
+    left:50%;
+    margin-left:-137px;
+    text-align: center;
+    color:#ddd;
+    font-size:16px;
+    line-height: 35px;
+}
+
+.jumpin {
+    width:211px;
+    height:56px;
+    background-color: rgba(14,14,14,0.43);
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.75);
+    float: left;
+    position: relative;
+    top:100%;
+    margin-top:-56px;
+    left:100%;
+    margin-left:-211px;
+    text-align: center;
+    color:#ddd;
+    font-size:16px;
+    line-height: 35px;
+}
+
+/* inGame */
+
+.game_dummy {
+    background-image: url(img/game_dummy.jpg);
+    background-size:cover;
+    width:100%;
+    height:100%;
+    position: absolute;
+    float: left;
+}
+
+.timer {
+    width:138px;
+    height: 55px;
+    background-color: rgba(14,14,14,0.71);
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.75);
+    float: left;
+    position: relative;
+    text-align: center;
+    color:#ddd;
+}
+
+.comments {
+    width: 285px;
+    height:71px;
+    background-color: rgba(14,14,14,0.71);
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.75);
+    float: left;
+    position: relative;
+    left:50%;
+    margin-left:-278px;
+}
+
+.quit {
+    width:103px;
+    height:58px;
+    background-color: rgba(14,14,14,0.71);
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.75);
+    float: right;
+    position: relative;
+    color:#ddd;
+}
+
+.points_list {
+    width:320px;
+    height:68px;
+    background-color: rgba(14,14,14,0.71);
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.75);
+    float: left;
+    position: relative;
+    top:100%;
+    margin-top:-68px;
+    left:50%;
+    margin-left:-298px;
+    text-align: center;
+    color:#ddd;
+    font-size:16px;
+}
+
+/* Result */
+
+.points_boarder {
+    width: 560px;
+    height: 333px;
+    background-color: rgba(0,0,0,0.43);
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.32);
+    float: left;
+    position: relative;
+    left: 50%;
+    margin-left:-280px;
+    top:50%;
+    margin-top: -167px;
+}
+
+.points_board_content {
+    width:534px;
+    height:312px;
+    background-color: rgba(0,0,0,0.71);
+    float: left;
+    position: relative;
+    left: 50%;
+    margin-left: -547px;
+    top:50%;
+    margin-top: -153px;
+}
+
+.ranks {
+    color: #ddd;
+    width: 100px;
+    height: 50px;
+    left:224px;
+    top: 138px;
+    float: left;
+    position: relative;
+}
+
+.your_rank {
+    width: 135px;
+    height: 135px;
+    background-color: rgba(0,0,0,0.71);
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.75);
+    float: left;
+    position: relative;
+    left: 266px;
+    top: 79px;
+    text-align: center;
+}
+
+.rank_title {
+    color: #E6A72B;
+    line-height: 300%;
+}
+
+.rank_count {
+    color: #CD4D21;
+    font-size: 42px;
+    line-height: 240%;
+    font-family:  Arial, Helvetica, sans-serif;
+}
+
+.user_info {
+    color: #ddd;
+    width: 211px;
+    height: 56px;
+    background-color: rgba(0,0,0,0.71);
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.75);
+    float: left;
+    position: relative;
+    top:100%;
+    margin-top: -56px;
+    margin-left: -280px;
+    text-align: center;
+    line-height: 180%;
+}
+
+.result_back {
+    color: #ddd;
+    width: 211px;
+    height: 56px;
+    background-color: rgba(0,0,0,0.71);
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.75);
+    float: left;
+    position: relative;
+    top:100%;
+    margin-top: -56px;
+    left:100%;
+    margin-left: -491px;
+    text-align: center;
+    line-height: 56px;
+}

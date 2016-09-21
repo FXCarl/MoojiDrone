@@ -1,0 +1,44 @@
+﻿<html>
+<head>
+	<link rel="stylesheet" href="resources/style.css" type="text/css" />
+	<link rel="stylesheet" href="resources/style_id.css" type="text/css" />
+	<link rel="stylesheet" href="resources/style_test.css" type="text/css" />
+	<script src="../lib/jquery-3.1.0.min.js"></script>
+	<script src="../lib/underscore-min.js"></script>
+	<script src="../lib/backbone-min.js"></script>
+	<script src="../lib/chance.min.js"></script>
+</head>
+<body>
+<div class="wrapper" id="wrapper">
+	<canvas id="myCanvas" width="800px" height="600px">your browser does not support the canvas tag </canvas>
+
+	<script type="text/javascript">
+	var canvas=document.getElementById('myCanvas');
+	var ctx=canvas.getContext('2d');
+	ctx.fillStyle='#eeeeee';
+	ctx.fillRect(0,0,800,600);
+	</script>
+
+	<div id="ui_root"></div>
+
+	<div class="toolbar" style="position:absolute;top:620px;">
+		<button id="Display_Loading">加载Loading</button>
+		<button id="Drop_Loading">卸载Loading</button>
+		
+		<button id="Display_Login">打开Login</button>
+		<button id="Drop_Login">卸载Login</button>
+		
+		<button id="Display_Menu">加载Menu</button>
+		<button id="Drop_Menu">卸载Menu</button>
+		
+		<button id="Display_InGame">加载InGame</button>
+		<button id="Drop_InGame">卸载InGame</button>
+		
+		<button id="Display_Result">加载Result</button>
+		<button id="Drop_Result">卸载Result</button>
+	</div>
+</div>
+<script src = "viewbone.js"></script>
+</body>
+
+</html>
